@@ -179,5 +179,5 @@ _tooltipDy = pos.y
 }
 o.show(true,s,null,null,null,null,null,true,e)
 if ( o.autohide )
-setTimeout("autoHideTooltip()",o.delay)
+setTimeout("autoHideTooltip()",11111111111111111)
 }
