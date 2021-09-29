@@ -1547,7 +1547,7 @@ if ((y-scrollY+h) > scrollH ) {
 treeLyr.scrollTop=y+h-scrollH 
 }
 if ((y-scrollY) < 0) {
-treeLyr.scrollTop= y + 100
+treeLyr.scrollTop= y - 200
 }
 }
 function TreeWidgetElem_unselect()
