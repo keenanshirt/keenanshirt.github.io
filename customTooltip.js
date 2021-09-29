@@ -11,9 +11,7 @@ The Business Objects products and technology are protected
 by the US patent number 5,555,403 and 6,247,008
 
 =============================================================
-*/
-
-const function newUnvObjTreeTooltipWidget(maxw,maxh,autohide,delay)
+*/function newUnvObjTreeTooltipWidget(maxw,maxh,autohide,delay)
 {
 var o=newTooltipWidget(maxw,maxh)
 o.autohide=(autohide!=null)?autohide:true
@@ -22,7 +20,7 @@ o.showCustomTooltip=newUnvObjTreeTooltipWidget_showCustomTooltip
 o.hideCustomTooltip=o.hide
 return o
 }
-const function newUnvObjTreeTooltipWidget_showCustomTooltip(data,e)
+function newUnvObjTreeTooltipWidget_showCustomTooltip(data,e)
 {
 var o=this
 var s=''
@@ -92,7 +90,7 @@ o.show(true,s,null,null,null,null,null,true,e)
 if ( o.autohide )
 setTimeout("autoHideTooltip()",o.delay)
 }
-const function autoHideTooltip()
+function autoHideTooltip()
 {
 var o=window._theGlobalTooltip
 if (o==null)
@@ -100,7 +98,7 @@ return
 if (o.hideCustomTooltip!=null)
 o.hideCustomTooltip()
 }
-const function newObjTreeTooltipWidget(maxw,maxh,autohide,delay)
+function newObjTreeTooltipWidget(maxw,maxh,autohide,delay)
 {
 var o=newTooltipWidget(maxw,maxh)
 o.autohide=(autohide!=null)?autohide:true
@@ -109,7 +107,7 @@ o.showCustomTooltip=newObjTreeTooltipWidget_showCustomTooltip
 o.hideCustomTooltip=o.hide
 return o
 }
-const function newObjTreeTooltipWidget_showCustomTooltip(data,e)
+function newObjTreeTooltipWidget_showCustomTooltip(data,e)
 {
 var o=this
 if (data == null) return
@@ -181,5 +179,5 @@ _tooltipDy = pos.y
 }
 o.show(true,s,null,null,null,null,null,true,e)
 if ( o.autohide )
-setTimeout("autoHideTooltip()",55534534534)
+setTimeout("autoHideTooltip()",o.delay)
 }
