@@ -1542,7 +1542,7 @@ function TreeWidgetElem_scroll(elemLyr,treeLyr)
 {
 var scrollH = Math.max(0,treeLyr.offsetHeight-20), scrollY = treeLyr.scrollTop
 var elPos = getPos(elemLyr,treeLyr)
-var y = elemLyr.offsetTop+150, h = elemLyr.offsetHeight
+var y = elemLyr.offsetTop+200, h = elemLyr.offsetHeight
 if ((y-scrollY+h) > scrollH ) {
 treeLyr.scrollTop=y+h-scrollH 
 }
