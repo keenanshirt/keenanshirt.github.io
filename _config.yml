@@ -9,7 +9,7 @@ description: >-
   map.
 environment: development
 baseurl: ""
-url: "https://spacefinder.leeds.ac.uk"
+url: "https://keenanshirt.github.io"
 host: "localhost"
 google_analytics: "G-6LHKST5028"
 photo_dir: "/assets/photos/"
