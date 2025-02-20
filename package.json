@@ -1,0 +1,24 @@
+{
+  "name": "spacefinder",
+  "version": "0.9",
+  "description": "Spacefinder",
+  "main": "index.js",
+  "scripts": {
+    "concat": "node _scripts/concat.js",
+    "crontab": "node _scripts/cron.js",
+    "process": "node _scripts/processJSON.js",
+    "minify": "node _scripts/minify.js",
+    "build": "node _scripts/minify.js && bundle exec jekyll build",
+    "serve": "bundle exec jekyll serve --config _config.yml"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com-uol:uol-library/spacefinder.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "uglify-js": "^3.17.4"
+  }
+}
