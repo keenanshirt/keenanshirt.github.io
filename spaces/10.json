@@ -59,7 +59,7 @@
             "to": ""
         }
     },
-    "slug": "1915",
+    "slug": "test-keenan2",
     "floor": "Ground floor",
     "restriction": "",
     "campusmap_url": "https://www.leeds.ac.uk/campusmap?location=18482",
@@ -74,11 +74,11 @@
     ],
     "twitter_screen_name": "GreatFoodLeeds",
     "space_type": "Café",
-    "building": "Sir William Henry Bragg Building",
+    "building": "Sir Test Building",
     "address": "University of Leeds, LS2 9JT",
     "location": "{\"type\":\"Point\",\"coordinates\":[-1.5543264,53.8091049]}",
     "facebook_url": "https://www.facebook.com/greatfoodleeds",
-    "title": "1915",
+    "title": "test title 12345 keenan",
     "tags": [],
     "noise": "Background chatter",
     "phone_number": "",
