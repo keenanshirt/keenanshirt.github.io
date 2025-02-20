@@ -1,3 +1,9 @@
+.occupancy {
+    padding: .3em 0;
+    &:before, strong {
+        color: $color-brand--dark;
+    }
+}
 #listcontrols {
     display: flex;
     flex-wrap: wrap;

@@ -1,17 +1,9 @@
-## About this site
+Spacefinder is a tool which allows students to find study spaces around a University Campus by identifying them on a map, listing them, and providing search and filtering tools to allow students to:
 
-<!-- 
+* list spaces which are currently open
+* identify the spaces which are nearest to their current location
+* list spaces which have certain characteristics (noise levels, availability of equipment, etc.)
 
-Describe your site here.
-
-Including the History section below is optional, however please credit the original repository
-in some way if you choose not to.
-
-The Copyright section should be kept intact to give credit to the various resources used in the
-application. Please amend this if you make any changes to the font usage, icons or mapping tools
-used.
-
--->
 ### History
 
 Spacefinder was originally developed by the University of Cambridge in 2015 as part of the futurelib innovation programme, which explored the future role of academic libraries within the University.
@@ -22,13 +14,11 @@ The code for the Ruby on Rails application which is used to create the site was 
 
 <a target="external" href="https://github.com/cambridge-collection/spacefinder">https://github.com/cambridge-collection/spacefinder</a>
 
-A rewrite of the code in the Cambridge application's UI was undertaken by the University of Leeds Library to make a single page application fed by JSON files which load data for all spaces (instead of loading them from a Rails API). The project was initiated to explore the possibility of using the Cambridge app in Leeds, where adoption of the full Rails stack was not possible.
+### About this site
 
-<a target="external" href="https://spacefinder.leeds.ac.uk/">https://spacefinder.leeds.ac.uk/</a>
+This site contains a rewrite of the code in the Cambridge application's UI to make a single page application fed by JSON files which load data for all spaces (instead of loading them from a Rails API). The project was initiated by the University of Leeds library to explore the possibility of using the Cambridge app in Leeds, but adoption of the full Rails stack was not possible at the time.
 
-This was released under an Apache 2.0 open source license in January 2023.
-
-<a target="external" href="https://github.com/uol-library/spacefinder">https://github.com/uol-library/spacefinder</a>
+<a target="external" href="https://github.com/uol-library/spacefinder-ui">https://github.com/uol-library/spacefinder-ui</a>
 
 ### Copyright
 

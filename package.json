@@ -6,19 +6,17 @@
   "scripts": {
     "concat": "node _scripts/concat.js",
     "crontab": "node _scripts/cron.js",
-    "process": "node _scripts/processJSON.js",
-    "minify": "node _scripts/minify.js",
-    "build": "node _scripts/minify.js && bundle exec jekyll build",
-    "serve": "bundle exec jekyll serve --config _config.yml"
+    "updateHours": "node _scripts/updateOpeningHoursLibCal.js",
+    "getHours": "node _scripts/getOpeningHoursLibCal.js"
   },
   "repository": {
     "type": "git",
-    "url": "git@github.com-uol:uol-library/spacefinder.git"
+    "url": "git@github.com:uol-library/spacefinder.leeds.ac.uk.git"
   },
   "keywords": [],
-  "author": "",
+  "author": "Peter Edwards <p.l.edwards@leeds.ac.uk>",
   "license": "Apache-2.0",
-  "devDependencies": {
-    "uglify-js": "^3.17.4"
+  "dependencies": {
+    "openid-client": "^5.6.1"
   }
 }
