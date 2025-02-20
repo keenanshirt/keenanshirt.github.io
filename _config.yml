@@ -1,4 +1,4 @@
-title: Keenan test Space Finder
+title: Space Finder
 email: ""
 description: >-
   Spacefinder includes detailed descriptions of spaces,
@@ -30,6 +30,7 @@ foi:
   url: ""
   text: ""
   shorttext: ""
+copyright: ""
 sass:
   style: compressed
 plugins:

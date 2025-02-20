@@ -1,10 +1,9 @@
 /**
  * Templates used to render spaces in the list.
  * 
- * Three fundtions should be defined in this file:
- * - getSpaceHTML - assembles HTML for the list view
- * - getAdditionalInfo - assembles HTML for expanded view
- * - getClassList - assembles classnames for each space container to allow filtering
+ * Two fundtions should be defined in this file:
+ * - getSpaceHTML - assembles HTML for the list view (short) and returns a HTML Element
+ * - getAdditionalInfo - assembles HTML for expanded view and returns an HTML String
  */
 
 /**
@@ -33,7 +32,6 @@ function getSpaceHTML( space ) {
     }
     spaceHTML += '<span class="address">' + loc + '</span></p>';
     spaceHTML += '<div class="space-details">';
-    console.log(spacefinder.imageBaseURL);
     if ( space.image != '' ) {
         spaceHTML += '<img src="' + spacefinder.imageBaseURL + space.image + '" class="space-image" loading="lazy" alt="' + space.imagealt + '">';
     }
@@ -71,7 +69,7 @@ function getAdditionalInfo( space ) {
     if ( space.url !== "" && space.url_text !== '' ) {
         spaceHTML += '<li class="icon-link"><a target="spaceurl" href="' + space.url + '">' + space.url_text + '</a></li>';
     }
-    if ( space.campusmap_url != '' ) {
+    if ( space.campusmap_url !== undefined && space.campusmap_url !== '') {
         let campusmap_ref = space.campusmap_ref !== '' ? ' (map reference ' + space.campusmap_ref + ')': '';
         spaceHTML += '<li class="icon-uol-logo-mark"><a target="campusmap" href="' + space.campusmap_url + '">View on the University campus map</a>' + campusmap_ref + '<li>';
     }
