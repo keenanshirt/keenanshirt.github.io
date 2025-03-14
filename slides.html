@@ -1,11 +1,12 @@
 <html>
   <head>
     <script>
-      document.addEventListener("DOMContentLoaded", () => {
+
         setInterval(function() {
           document.body.style.cursor = "none";
-        }, 100);
-      });
+          document.querySelector("iframe").style.cursor = "none";
+        }, 1000);
+
     </script>
     <style>
       .wrapper {
