@@ -1,5 +1,27 @@
 <html>
   <head>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        let idleMouseTimer;
+        let forceMouseHide = false;
+        document.body.style.cursor = "none";
+        // Your wrapper here
+        document.body.addEventListener("mousemove", () => {
+          if (forceMouseHide) {
+            return;
+          }
+          document.body.style.cursor = "";
+          clearTimeout(idleMouseTimer);
+          idleMouseTimer = setTimeout(() => {
+            document.body.style.cursor = "none";
+            forceMouseHide = true;
+            setTimeout(() => {
+              forceMouseHide = false;
+            }, 200);
+          }, 1000);
+        });
+      });
+    </script>
     <style>
       .wrapper {
         position: relative;
@@ -11,7 +33,6 @@
         bottom: 0;
         right: 0;
         left: 0;
-        cursor: none;
         z-index: 100;
       }
 
@@ -19,7 +40,10 @@
         overflow: auto;
       }
 
-      html, body, div, iframe {
+      html,
+      body,
+      div,
+      iframe {
         margin: 0px;
         padding: 0px;
         height: 100%;
