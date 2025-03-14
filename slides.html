@@ -3,7 +3,7 @@
     <script>
       document.addEventListener("DOMContentLoaded", () => {
         let idleMouseTimer;
-        let forceMouseHide = false;
+        let forceMouseHide = true;
         document.body.style.cursor = "none";
         // Your wrapper here
         document.body.addEventListener("mousemove", () => {
@@ -16,8 +16,8 @@
             document.body.style.cursor = "none";
             forceMouseHide = true;
             setTimeout(() => {
-              forceMouseHide = false;
-            }, 200);
+              forceMouseHide = true;
+            }, 100);
           }, 1000);
         });
       });
