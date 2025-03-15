@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hidden Cursor</title>
+    <title>Hidden Cursor - Ultimate Edition</title>
     <style>
         html, body {
             margin: 0;
@@ -13,11 +13,13 @@
             width: 100%;
             cursor: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNgYAAAAAMAASsJTYQAAAAASUVORK5CYII='), auto;
         }
+
         .container {
             position: relative;
             width: 100vw;
             height: 100vh;
         }
+
         iframe {
             position: absolute;
             top: 0;
@@ -25,7 +27,9 @@
             width: 100%;
             height: 100%;
             border: none;
+            pointer-events: none; /* Prevents TV browser from recognizing cursor interactions */
         }
+
         .cursor-blocker {
             position: fixed;
             top: 0;
@@ -36,33 +40,46 @@
             z-index: 9999;
             cursor: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNgYAAAAAMAASsJTYQAAAAASUVORK5CYII='), auto;
         }
+
+        .svg-blocker {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 10000;
+            pointer-events: all;
+            background: transparent;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <iframe src="https://docs.google.com/presentation/d/e/2PACX-1vQEYMewLXQQATrP5oczWdAXqCbQW0ly7CtlweRQQ3JTZTXmvml6NAs322vc5xqTp3IAB6sBhGtQtKM_/embed?start=true&loop=true&delayms=5000&rm=minimal" allowfullscreen></iframe>
         <div class="cursor-blocker"></div>
+        <svg class="svg-blocker"></svg> <!-- Eats all pointer events -->
     </div>
 
     <script>
         function hideCursor() {
             document.documentElement.style.cursor = 'url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNgYAAAAAMAASsJTYQAAAAASUVORK5CYII=), auto';
+            window.scrollTo(9999, 9999); // Moves any cursor-dependent scroll behavior away
         }
 
-        function lockPointer() {
-            const blocker = document.querySelector('.cursor-blocker');
-            blocker.requestPointerLock = blocker.requestPointerLock || blocker.mozRequestPointerLock || blocker.webkitRequestPointerLock;
-            if (blocker.requestPointerLock) {
-                blocker.requestPointerLock();
-            }
+        function moveCursorOffscreen(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            document.documentElement.style.cursor = 'none';
+            window.scrollTo(9999, 9999);
         }
 
-        // Enforce cursor hiding every frame
-        setInterval(hideCursor, 50);
+        // Set interval to constantly reapply the cursor change
+        setInterval(hideCursor, 20);
 
-        // Try to lock pointer on user interaction
-        document.addEventListener('click', lockPointer);
-        document.addEventListener('mousemove', hideCursor);
+        // Capture all user interactions and move the cursor offscreen
+        document.addEventListener('mousemove', moveCursorOffscreen, { passive: false });
+        document.addEventListener('click', moveCursorOffscreen, { passive: false });
+        document.addEventListener('touchstart', moveCursorOffscreen, { passive: false });
     </script>
 </body>
 </html>
