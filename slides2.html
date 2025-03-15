@@ -10,12 +10,16 @@
             padding: 0;
             height: 100%;
             overflow: hidden;
+            cursor: none !important;
         }
         
-        .container {
+        .iframe-container {
+            position: fixed;
+            top: 0;
+            left: 0;
             width: 100%;
             height: 100%;
-            position: relative;
+            z-index: 1;
         }
         
         #presentation {
@@ -24,73 +28,111 @@
             border: none;
         }
         
-        /* Cross-browser cursor hiding */
-        .cursor-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 10;
-            pointer-events: none; /* Allow clicks to pass through to iframe */
-            cursor: none; /* Hide cursor on the overlay */
+        /* Custom cursor that's completely transparent */
+        .custom-cursor {
+            position: fixed;
+            width: 1px;
+            height: 1px;
+            background: transparent;
+            z-index: 9999;
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            opacity: 0;
         }
         
-        /* Specific approach for Samsung Tizen and other browsers */
-        #presentation {
-            cursor: none !important; /* Hide cursor directly on iframe */
-        }
-        
-        /* Alternative approach that forces cursor hiding */
-        body {
-            cursor: none;
-        }
-        
-        /* This will catch any children that might have cursor set */
+        /* Ensure that all elements have cursor: none */
         * {
-            cursor: none !important;
+            cursor: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="), none !important;
         }
     </style>
 </head>
 <body>
-    <div class="container">
+    <!-- Custom cursor element -->
+    <div class="custom-cursor" id="custom-cursor"></div>
+    
+    <!-- Iframe container -->
+    <div class="iframe-container">
         <iframe id="presentation" src="https://docs.google.com/presentation/d/e/2PACX-1vQEYMewLXQQATrP5oczWdAXqCbQW0ly7CtlweRQQ3JTZTXmvml6NAs322vc5xqTp3IAB6sBhGtQtKM_/embed?start=true&loop=true&delayms=5000&rm=minimal" allowfullscreen></iframe>
-        <div class="cursor-overlay"></div>
     </div>
 
     <script>
-        // Script to ensure cursor remains hidden even if iframe content changes
         document.addEventListener('DOMContentLoaded', function() {
+            // Get custom cursor and iframe elements
+            const customCursor = document.getElementById('custom-cursor');
             const iframe = document.getElementById('presentation');
             
-            // Approach 1: Try to inject CSS into iframe when it loads
-            iframe.addEventListener('load', function() {
-                try {
-                    const iframeDocument = iframe.contentDocument || iframe.contentWindow.document;
-                    
-                    // Create and inject a style element
-                    const style = iframeDocument.createElement('style');
-                    style.textContent = '* { cursor: none !important; }';
-                    iframeDocument.head.appendChild(style);
-                } catch(e) {
-                    // Silent catch - will fail for cross-origin iframes due to security restrictions
-                    // But we have other fallback methods in place
-                }
-            });
+            // Function to track mouse movement and update custom cursor position
+            function updateCursorPosition(e) {
+                customCursor.style.left = e.clientX + 'px';
+                customCursor.style.top = e.clientY + 'px';
+            }
             
-            // Approach 2: Set a transparent overlay that has cursor:none
-            const overlay = document.querySelector('.cursor-overlay');
-            
-            // Make sure cursor stays hidden even when moving in and out of iframe
-            document.addEventListener('mouseover', function() {
+            // Add event listeners for mouse movement
+            document.addEventListener('mousemove', updateCursorPosition);
+            document.addEventListener('mouseenter', function() {
                 document.body.style.cursor = 'none';
             });
             
-            // For Samsung Tizen browser which might have specific handling
+            // Create and prepend an invisible div overlay that captures mouse events
+            const overlay = document.createElement('div');
+            overlay.style.position = 'fixed';
+            overlay.style.top = '0';
+            overlay.style.left = '0';
+            overlay.style.width = '100%';
+            overlay.style.height = '100%';
+            overlay.style.zIndex = '2';
+            overlay.style.cursor = 'none';
+            overlay.style.backgroundColor = 'transparent';
+            overlay.style.pointerEvents = 'none'; // Allow clicks to pass through
+            document.body.prepend(overlay);
+            
+            // Attempt to inject CSS into iframe when it loads (for same-origin iframes)
+            iframe.addEventListener('load', function() {
+                try {
+                    // Try to access the iframe content document
+                    const frameDoc = iframe.contentDocument || iframe.contentWindow.document;
+                    
+                    // Create style element to hide cursor in iframe content
+                    const style = frameDoc.createElement('style');
+                    style.textContent = `
+                        * { 
+                            cursor: none !important; 
+                        }
+                        html, body { 
+                            cursor: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="), none !important; 
+                        }
+                    `;
+                    frameDoc.head.appendChild(style);
+                } catch(e) {
+                    // Silent catch - expected to fail for cross-origin frames
+                    console.log("Unable to modify iframe content directly due to same-origin policy");
+                }
+            });
+            
+            // Tizen-specific handling
             if (navigator.userAgent.indexOf('Tizen') > -1) {
-                // Additional Tizen-specific handling if needed
-                document.documentElement.style.setProperty('cursor', 'none', 'important');
+                // Force hardware cursor hiding if possible
+                document.documentElement.style.cursor = 'none';
+                document.body.style.cursor = 'none';
+                
+                // For Tizen browser, try additional approaches
+                const styleEl = document.createElement('style');
+                styleEl.textContent = `
+                    @media all {
+                        * { cursor: none !important; }
+                        ::before, ::after { cursor: none !important; }
+                    }
+                `;
+                document.head.appendChild(styleEl);
             }
+            
+            // Ensure cursor stays hidden by continuously applying cursor:none
+            setInterval(function() {
+                document.body.style.cursor = 'none';
+                Array.from(document.querySelectorAll('*')).forEach(el => {
+                    el.style.cursor = 'none';
+                });
+            }, 500);
         });
     </script>
 </body>
