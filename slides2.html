@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hidden Cursor - Ultimate Edition</title>
+    <title>Destroy Cursor (Samsung TV Edition)</title>
     <style>
         html, body {
             margin: 0;
@@ -11,7 +11,7 @@
             overflow: hidden;
             height: 100%;
             width: 100%;
-            cursor: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNgYAAAAAMAASsJTYQAAAAASUVORK5CYII='), auto;
+            cursor: url('data:image/gif;base64,R0lGODlhAQABAPAAAP///wAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw=='), auto;
         }
 
         .container {
@@ -27,59 +27,68 @@
             width: 100%;
             height: 100%;
             border: none;
-            pointer-events: none; /* Prevents TV browser from recognizing cursor interactions */
+            pointer-events: none; /* Prevents Samsung's browser from detecting the cursor */
         }
 
-        .cursor-blocker {
+        canvas {
             position: fixed;
             top: 0;
             left: 0;
             width: 100vw;
             height: 100vh;
-            background: transparent;
             z-index: 9999;
-            cursor: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNgYAAAAAMAASsJTYQAAAAASUVORK5CYII='), auto;
-        }
-
-        .svg-blocker {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            z-index: 10000;
-            pointer-events: all;
             background: transparent;
+            pointer-events: all;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <iframe src="https://docs.google.com/presentation/d/e/2PACX-1vQEYMewLXQQATrP5oczWdAXqCbQW0ly7CtlweRQQ3JTZTXmvml6NAs322vc5xqTp3IAB6sBhGtQtKM_/embed?start=true&loop=true&delayms=5000&rm=minimal" allowfullscreen></iframe>
-        <div class="cursor-blocker"></div>
-        <svg class="svg-blocker"></svg> <!-- Eats all pointer events -->
+        <canvas id="cursorEater"></canvas>
     </div>
 
     <script>
         function hideCursor() {
-            document.documentElement.style.cursor = 'url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNgYAAAAAMAASsJTYQAAAAASUVORK5CYII=), auto';
-            window.scrollTo(9999, 9999); // Moves any cursor-dependent scroll behavior away
+            document.documentElement.style.cursor = 'url(data:image/gif;base64,R0lGODlhAQABAPAAAP///wAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw==), auto';
+            window.scrollTo(9999, 9999);
         }
 
-        function moveCursorOffscreen(event) {
+        function lockCursor(event) {
             event.preventDefault();
-            event.stopPropagation();
             document.documentElement.style.cursor = 'none';
             window.scrollTo(9999, 9999);
+        }
+
+        function requestFullscreen() {
+            if (document.documentElement.requestFullscreen) {
+                document.documentElement.requestFullscreen();
+            } else if (document.documentElement.mozRequestFullScreen) {
+                document.documentElement.mozRequestFullScreen();
+            } else if (document.documentElement.webkitRequestFullscreen) {
+                document.documentElement.webkitRequestFullscreen();
+            } else if (document.documentElement.msRequestFullscreen) {
+                document.documentElement.msRequestFullscreen();
+            }
+        }
+
+        // Draw on canvas to block pointer detection
+        function blockPointerEvents() {
+            const canvas = document.getElementById('cursorEater');
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = "rgba(0,0,0,0)";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
         }
 
         // Set interval to constantly reapply the cursor change
         setInterval(hideCursor, 20);
 
-        // Capture all user interactions and move the cursor offscreen
-        document.addEventListener('mousemove', moveCursorOffscreen, { passive: false });
-        document.addEventListener('click', moveCursorOffscreen, { passive: false });
-        document.addEventListener('touchstart', moveCursorOffscreen, { passive: false });
+        // Capture all user interactions
+        document.addEventListener('mousemove', lockCursor, { passive: false });
+        document.addEventListener('click', requestFullscreen, { passive: false });
+        document.addEventListener('touchstart', lockCursor, { passive: false });
+
+        blockPointerEvents();
     </script>
 </body>
 </html>
