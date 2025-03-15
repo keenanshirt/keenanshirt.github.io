@@ -27,8 +27,6 @@
             width: 100%;
             height: 100%;
             border: none;
-            pointer-events: none;
-            cursor: none !important;
         }
 
         .cursor-blocker {
@@ -40,7 +38,7 @@
             background: transparent;
             z-index: 9999;
             pointer-events: all;
-            cursor: none !important;
+            visibility: hidden;
         }
     </style>
 </head>
@@ -56,7 +54,7 @@
             document.body.style.cursor = 'none';
             let iframe = document.getElementById('presentation');
             if (iframe) {
-                iframe.style.cursor = 'none';
+                iframe.style.visibility = 'hidden';  // Hide cursor by making iframe invisible to interaction
             }
         }
 
@@ -78,15 +76,28 @@
             }
         }
 
+        function monitorIframeChanges() {
+            const iframe = document.getElementById('presentation');
+            if (iframe) {
+                const observer = new MutationObserver(() => {
+                    hideCursor(); // Rehide cursor whenever the iframe content changes
+                });
+                observer.observe(iframe, {
+                    childList: true, // Observe child elements for changes
+                    subtree: true    // Observe the entire subtree (iframe's content)
+                });
+            }
+        }
+
         function requestFullscreen() {
-            if (document.documentElement.requestFullscreen) {
-                document.documentElement.requestFullscreen();
-            } else if (document.documentElement.mozRequestFullScreen) {
-                document.documentElement.mozRequestFullScreen();
-            } else if (document.documentElement.webkitRequestFullscreen) {
-                document.documentElement.webkitRequestFullscreen();
-            } else if (document.documentElement.msRequestFullscreen) {
-                document.documentElement.msRequestFullscreen();
+            // Handle fullscreen request specifically for Tizen
+            let docEl = document.documentElement;
+            if (docEl.requestFullscreen) {
+                docEl.requestFullscreen();
+            } else if (docEl.webkitRequestFullscreen) {
+                docEl.webkitRequestFullscreen();
+            } else if (docEl.msRequestFullscreen) {
+                docEl.msRequestFullscreen();
             }
         }
 
@@ -98,6 +109,7 @@
         // Run cursor removal aggressively
         forceHideCursor();
         detectSlideTransition();
+        monitorIframeChanges(); // Start monitoring iframe content for changes
 
         // Listen to every possible event to keep cursor dead
         const events = [
