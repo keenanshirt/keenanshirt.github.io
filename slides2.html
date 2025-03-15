@@ -69,14 +69,12 @@
 
         function forceRecreateCursorBlocker() {
             recreateCursorBlocker();
-            setTimeout(forceRecreateCursorBlocker, 1000); // Recreate every second
+            setInterval(forceRecreateCursorBlocker, 1000); // Recreate every second
         }
 
-        // Hide cursor initially
+        // Initially hide the cursor and create the blocker
         hideCursor();
-
-        // Recreate the blocker div every second
-        forceRecreateCursorBlocker();
+        forceRecreateCursorBlocker(); // Start the periodic recreation
     </script>
 </body>
 </html>
