@@ -3,23 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hide Cursor</title>
+    <title>Hidden Cursor</title>
     <style>
-        /* Hide the cursor using CSS */
-        body {
-            cursor: none; /* Works in most modern browsers */
+        html, body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            cursor: none;
+            height: 100%;
+            width: 100%;
+        }
+        iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            border: none;
         }
     </style>
-    <script>
-        // Additional JavaScript to ensure cursor hiding in case CSS fails
-        document.addEventListener("mousemove", function(event) {
-            event.target.style.cursor = "none";
-        });
-    </script>
 </head>
 <body>
-    <h1>Cursor Hidden</h1>
-<iframe src="https://docs.google.com/presentation/d/e/2PACX-1vQEYMewLXQQATrP5oczWdAXqCbQW0ly7CtlweRQQ3JTZTXmvml6NAs322vc5xqTp3IAB6sBhGtQtKM_/embed?start=true&loop=true&delayms=5000&rm=minimal" frameborder="0" width="3840" height="2160" allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true"></iframe>
-    
+    <iframe src="https://docs.google.com/presentation/d/e/2PACX-1vQEYMewLXQQATrP5oczWdAXqCbQW0ly7CtlweRQQ3JTZTXmvml6NAs322vc5xqTp3IAB6sBhGtQtKM_/embed?start=true&loop=true&delayms=5000&rm=minimal" allowfullscreen></iframe>
 </body>
 </html>
