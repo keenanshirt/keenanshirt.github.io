@@ -3,24 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Presentation with Hidden Cursor</title>
+    <title>Samsung TV Presentation with Hidden Cursor</title>
     <style>
         body, html {
             margin: 0;
             padding: 0;
             height: 100%;
+            width: 100%;
             overflow: hidden;
+            cursor: none !important;
+            user-select: none;
+            -webkit-user-select: none;
         }
         
-        /* Full screen container */
-        .presentation-container {
+        /* Presentation wrapper */
+        .presentation-wrapper {
             position: relative;
             width: 100vw;
             height: 100vh;
-            overflow: hidden;
         }
         
-        /* iframe styling */
+        /* The iframe */
         #presentation {
             width: 100%;
             height: 100%;
@@ -31,88 +34,134 @@
             z-index: 1;
         }
         
-        /* Transparent overlay that will catch all mouse events */
-        .cursor-catcher {
+        /* Multiple overlays to ensure cursor capture */
+        .cursor-hider {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             z-index: 999;
-            background: transparent;
+            background-color: transparent;
+            pointer-events: none; /* Allow clicks to pass through */
             cursor: none !important;
+        }
+        
+        /* Use a fake invisible cursor image for Samsung browsers */
+        * {
+            cursor: url('data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'), auto !important;
         }
     </style>
 </head>
 <body>
-    <div class="presentation-container">
-        <!-- The iframe with the presentation -->
+    <!-- Presentation container -->
+    <div class="presentation-wrapper">
         <iframe id="presentation" src="https://docs.google.com/presentation/d/e/2PACX-1vQEYMewLXQQATrP5oczWdAXqCbQW0ly7CtlweRQQ3JTZTXmvml6NAs322vc5xqTp3IAB6sBhGtQtKM_/embed?start=true&loop=true&delayms=5000&rm=minimal" allowfullscreen></iframe>
     </div>
+    
+    <!-- Multiple overlays for redundancy -->
+    <div class="cursor-hider" id="overlay-1"></div>
+    <div class="cursor-hider" id="overlay-2"></div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const container = document.querySelector('.presentation-container');
-            const iframe = document.getElementById('presentation');
+        // Function to continuously maintain cursor hiding
+        function maintainCursorHiding() {
+            // Force cursor hiding through inline styles
+            document.body.style.cursor = 'none';
+            document.documentElement.style.cursor = 'none';
             
-            // Create transparent overlay that will catch all mouse events
+            // Create and append new cursor hider layers periodically
             const overlay = document.createElement('div');
-            overlay.className = 'cursor-catcher';
+            overlay.className = 'cursor-hider';
+            overlay.style.zIndex = (1000 + Math.floor(Math.random() * 100)); // Random high z-index
             document.body.appendChild(overlay);
             
-            // Function to handle clicks on the overlay and pass them to the iframe
-            overlay.addEventListener('click', function(event) {
-                // Get click coordinates
-                const x = event.clientX;
-                const y = event.clientY;
-                
-                // Calculate position relative to the iframe
-                const rect = iframe.getBoundingClientRect();
-                const iframeX = x - rect.left;
-                const iframeY = y - rect.top;
-                
-                // Create and dispatch a click event to the iframe
-                const clickEvent = new MouseEvent('click', {
-                    bubbles: true,
-                    cancelable: true,
-                    view: window,
-                    clientX: x,
-                    clientY: y
-                });
-                
-                // Send the click to the iframe's position
-                iframe.dispatchEvent(clickEvent);
-            });
+            // Limit the number of overlays to prevent memory issues
+            const overlays = document.querySelectorAll('.cursor-hider');
+            if (overlays.length > 5) {
+                document.body.removeChild(overlays[0]);
+            }
+        }
+        
+        // Run cursor hiding on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Apply initial cursor hiding
+            document.body.style.cursor = 'none';
+            document.documentElement.style.cursor = 'none';
             
-            // Handle all mouse events to keep cursor hidden
-            ['mousemove', 'mouseenter', 'mouseover'].forEach(function(eventType) {
-                overlay.addEventListener(eventType, function(e) {
-                    e.preventDefault();
-                    return false;
-                });
-            });
-            
-            // Ensure all elements have cursor:none (for Samsung Tizen)
-            const styleEl = document.createElement('style');
-            styleEl.innerHTML = `
-                * { cursor: none !important; }
-                html, body { cursor: none !important; }
-                iframe { cursor: none !important; }
-            `;
-            document.head.appendChild(styleEl);
-            
-            // Force hide system cursor for Samsung Tizen browser
-            if (navigator.userAgent.indexOf('Tizen') > -1) {
-                // Add Tizen-specific empty cursor
-                const tizenStyle = document.createElement('style');
-                tizenStyle.innerHTML = `
-                    * {
-                        cursor: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII='), auto !important;
+            // Target Samsung Tizen browser specifically
+            if (navigator.userAgent.indexOf('Tizen') > -1 || 
+                navigator.userAgent.indexOf('SMART-TV') > -1 || 
+                navigator.userAgent.indexOf('SmartTV') > -1) {
+                
+                // Samsung TV specific cursor hiding technique
+                const samsungStyle = document.createElement('style');
+                samsungStyle.innerHTML = `
+                    @-webkit-keyframes hideCursor {
+                        to { cursor: none; }
+                    }
+                    @keyframes hideCursor {
+                        to { cursor: none; }
+                    }
+                    body, html, * {
+                        -webkit-animation: hideCursor 0.1s linear 0s infinite;
+                        animation: hideCursor 0.1s linear 0s infinite;
+                        cursor: url('data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'), none !important;
                     }
                 `;
-                document.head.appendChild(tizenStyle);
+                document.head.appendChild(samsungStyle);
+                
+                // Continuously monitor and maintain cursor hiding
+                setInterval(maintainCursorHiding, 500);
+                
+                // Create observer to watch for DOM changes
+                const observer = new MutationObserver(function() {
+                    document.body.style.cursor = 'none';
+                    document.documentElement.style.cursor = 'none';
+                    
+                    // Force cursor hiding on all elements after DOM changes
+                    const allElements = document.querySelectorAll('*');
+                    for (let i = 0; i < allElements.length; i++) {
+                        allElements[i].style.cursor = 'none';
+                    }
+                });
+                
+                // Start observing the document for DOM changes
+                observer.observe(document.documentElement, {
+                    childList: true,
+                    subtree: true,
+                    attributes: true
+                });
             }
+            
+            // Event listeners for cursor hiding when mouse moves
+            document.addEventListener('mousemove', function() {
+                document.body.style.cursor = 'none';
+            });
+            
+            // Handle resize events (slides changing might trigger layout shifts)
+            window.addEventListener('resize', function() {
+                document.body.style.cursor = 'none';
+                document.documentElement.style.cursor = 'none';
+            });
         });
+        
+        // Extra aggressive approach: continuously force cursor hiding
+        setInterval(function() {
+            document.body.style.cursor = 'none';
+            document.documentElement.style.cursor = 'none';
+            
+            // Extra measure for Samsung TVs - create new style elements periodically
+            const style = document.createElement('style');
+            style.innerHTML = '* { cursor: none !important; }';
+            document.head.appendChild(style);
+            
+            // Limit the number of style elements to prevent memory issues
+            const styles = document.querySelectorAll('style');
+            if (styles.length > 20) {
+                document.head.removeChild(styles[0]);
+            }
+        }, 1000);
     </script>
 </body>
 </html>
