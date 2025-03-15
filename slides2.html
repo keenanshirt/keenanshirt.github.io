@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Samsung TV Cursor Annihilation</title>
+    <title>Samsung TV Cursor Obliterator</title>
     <style>
         html, body {
             margin: 0;
@@ -27,7 +27,7 @@
             width: 100%;
             height: 100%;
             border: none;
-            pointer-events: none; /* Prevents Samsung's cursor reappearance */
+            pointer-events: none;
         }
 
         .cursor-blocker {
@@ -36,8 +36,8 @@
             left: 0;
             width: 100vw;
             height: 100vh;
-            background: transparent;
             z-index: 9999;
+            background: transparent;
             pointer-events: all;
             cursor: none !important;
         }
@@ -58,7 +58,13 @@
 
         function forceHideCursor() {
             hideCursor();
-            setTimeout(forceHideCursor, 50); // Reapply every 50ms (Samsung tries to reset)
+            requestAnimationFrame(forceHideCursor);  // Runs every frame (16ms)
+        }
+
+        function engageCursorLock() {
+            if (document.body.requestPointerLock) {
+                document.body.requestPointerLock();
+            }
         }
 
         function requestFullscreen() {
@@ -78,13 +84,29 @@
             hideCursor();
         }
 
-        // Start aggressive cursor removal
+        // Run cursor removal aggressively
         forceHideCursor();
+        setInterval(hideCursor, 10); // Reapply every 10ms in case of forced reset
 
-        // Capture all user interactions
-        document.addEventListener('mousemove', blockCursor, { passive: false });
-        document.addEventListener('click', requestFullscreen, { passive: false });
-        document.addEventListener('touchstart', blockCursor, { passive: false });
+        // Listen to every possible event to keep cursor dead
+        const events = [
+            'mousemove', 'mousedown', 'mouseup', 'mouseenter', 'mouseleave',
+            'mouseover', 'mouseout', 'click', 'dblclick', 'contextmenu',
+            'touchstart', 'touchmove', 'touchend', 'touchcancel',
+            'keydown', 'keyup', 'keypress', 'scroll', 'wheel', 'resize',
+            'focus', 'blur', 'pointermove', 'pointerdown', 'pointerup',
+            'pointerenter', 'pointerleave', 'pointerover', 'pointerout'
+        ];
+
+        events.forEach(event => {
+            document.addEventListener(event, blockCursor, { passive: false });
+        });
+
+        // On click, attempt fullscreen & pointer lock
+        document.addEventListener('click', () => {
+            requestFullscreen();
+            engageCursorLock();
+        }, { passive: false });
     </script>
 </body>
 </html>
