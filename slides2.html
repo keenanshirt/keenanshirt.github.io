@@ -38,7 +38,8 @@
             background: transparent;
             z-index: 9999;
             pointer-events: all;
-            visibility: hidden;
+            visibility: visible; /* Keeps this div blocking the cursor */
+            cursor: none !important; /* Hides the cursor in the parent */
         }
     </style>
 </head>
@@ -53,14 +54,8 @@
             document.documentElement.style.cursor = 'none';
             document.body.style.cursor = 'none';
 
-            // Check if the iframe is accessible and hide the cursor inside it
-            let iframe = document.getElementById('presentation');
-            if (iframe && iframe.contentWindow) {
-                let iframeDoc = iframe.contentWindow.document;
-                if (iframeDoc) {
-                    iframeDoc.body.style.cursor = 'none'; // Hide cursor inside iframe
-                }
-            }
+            // No need to access iframe content since it's cross-origin
+            // Just ensure the cursor is hidden globally
         }
 
         function forceHideCursor() {
@@ -82,14 +77,11 @@
         }
 
         function monitorIframeChanges() {
+            // Monitor iframe content indirectly (cannot access content directly due to cross-origin)
             const iframe = document.getElementById('presentation');
             if (iframe) {
-                const observer = new MutationObserver(() => {
-                    hideCursor(); // Rehide cursor whenever the iframe content changes
-                });
-                observer.observe(iframe, {
-                    childList: true, // Observe child elements for changes
-                    subtree: true    // Observe the entire subtree (iframe's content)
+                iframe.addEventListener('load', () => {
+                    hideCursor(); // Hide cursor whenever iframe reloads (after slide change)
                 });
             }
         }
@@ -104,11 +96,6 @@
             } else if (docEl.msRequestFullscreen) {
                 docEl.msRequestFullscreen();
             }
-        }
-
-        function blockCursor(event) {
-            event.preventDefault();
-            hideCursor();
         }
 
         // Run cursor removal aggressively
@@ -127,7 +114,7 @@
         ];
 
         events.forEach(event => {
-            document.addEventListener(event, blockCursor, { passive: false });
+            document.addEventListener(event, hideCursor, { passive: false });
         });
 
         // Attempt fullscreen on click
