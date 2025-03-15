@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Destroy Cursor (Samsung TV Edition)</title>
+    <title>Samsung TV Cursor Annihilation</title>
     <style>
         html, body {
             margin: 0;
@@ -11,7 +11,7 @@
             overflow: hidden;
             height: 100%;
             width: 100%;
-            cursor: url('data:image/gif;base64,R0lGODlhAQABAPAAAP///wAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw=='), auto;
+            cursor: none !important;
         }
 
         .container {
@@ -27,37 +27,38 @@
             width: 100%;
             height: 100%;
             border: none;
-            pointer-events: none; /* Prevents Samsung's browser from detecting the cursor */
+            pointer-events: none; /* Prevents Samsung's cursor reappearance */
         }
 
-        canvas {
+        .cursor-blocker {
             position: fixed;
             top: 0;
             left: 0;
             width: 100vw;
             height: 100vh;
-            z-index: 9999;
             background: transparent;
+            z-index: 9999;
             pointer-events: all;
+            cursor: none !important;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <iframe src="https://docs.google.com/presentation/d/e/2PACX-1vQEYMewLXQQATrP5oczWdAXqCbQW0ly7CtlweRQQ3JTZTXmvml6NAs322vc5xqTp3IAB6sBhGtQtKM_/embed?start=true&loop=true&delayms=5000&rm=minimal" allowfullscreen></iframe>
-        <canvas id="cursorEater"></canvas>
+        <iframe id="presentation" src="https://docs.google.com/presentation/d/e/2PACX-1vQEYMewLXQQATrP5oczWdAXqCbQW0ly7CtlweRQQ3JTZTXmvml6NAs322vc5xqTp3IAB6sBhGtQtKM_/embed?start=true&loop=true&delayms=5000&rm=minimal" allowfullscreen></iframe>
+        <div class="cursor-blocker"></div>
     </div>
 
     <script>
         function hideCursor() {
-            document.documentElement.style.cursor = 'url(data:image/gif;base64,R0lGODlhAQABAPAAAP///wAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw==), auto';
-            window.scrollTo(9999, 9999);
+            document.documentElement.style.cursor = 'none';
+            document.body.style.cursor = 'none';
+            document.getElementById('presentation').style.cursor = 'none';
         }
 
-        function lockCursor(event) {
-            event.preventDefault();
-            document.documentElement.style.cursor = 'none';
-            window.scrollTo(9999, 9999);
+        function forceHideCursor() {
+            hideCursor();
+            setTimeout(forceHideCursor, 50); // Reapply every 50ms (Samsung tries to reset)
         }
 
         function requestFullscreen() {
@@ -72,23 +73,18 @@
             }
         }
 
-        // Draw on canvas to block pointer detection
-        function blockPointerEvents() {
-            const canvas = document.getElementById('cursorEater');
-            const ctx = canvas.getContext('2d');
-            ctx.fillStyle = "rgba(0,0,0,0)";
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        function blockCursor(event) {
+            event.preventDefault();
+            hideCursor();
         }
 
-        // Set interval to constantly reapply the cursor change
-        setInterval(hideCursor, 20);
+        // Start aggressive cursor removal
+        forceHideCursor();
 
         // Capture all user interactions
-        document.addEventListener('mousemove', lockCursor, { passive: false });
+        document.addEventListener('mousemove', blockCursor, { passive: false });
         document.addEventListener('click', requestFullscreen, { passive: false });
-        document.addEventListener('touchstart', lockCursor, { passive: false });
-
-        blockPointerEvents();
+        document.addEventListener('touchstart', blockCursor, { passive: false });
     </script>
 </body>
 </html>
