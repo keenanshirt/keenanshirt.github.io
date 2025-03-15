@@ -3,41 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Samsung TV Cursor Guillotine</title>
+    <title>Presentation with Hidden Cursor</title>
     <style>
-        html, body {
+        body, html {
             margin: 0;
             padding: 0;
-            overflow: hidden;
             height: 100%;
-            width: 100%;
-            cursor: none !important;
+            overflow: hidden;
         }
-
+        
         .container {
+            width: 100%;
+            height: 100%;
             position: relative;
-            width: 100vw;
-            height: 100vh;
         }
-
-        iframe {
+        
+        #presentation {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        
+        /* Cross-browser cursor hiding */
+        .cursor-overlay {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            border: none;
+            z-index: 10;
+            pointer-events: none; /* Allow clicks to pass through to iframe */
+            cursor: none; /* Hide cursor on the overlay */
         }
-
-        .cursor-blocker {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: transparent;
-            z-index: 9999;
-            pointer-events: all;
+        
+        /* Specific approach for Samsung Tizen and other browsers */
+        #presentation {
+            cursor: none !important; /* Hide cursor directly on iframe */
+        }
+        
+        /* Alternative approach that forces cursor hiding */
+        body {
+            cursor: none;
+        }
+        
+        /* This will catch any children that might have cursor set */
+        * {
             cursor: none !important;
         }
     </style>
@@ -45,36 +55,43 @@
 <body>
     <div class="container">
         <iframe id="presentation" src="https://docs.google.com/presentation/d/e/2PACX-1vQEYMewLXQQATrP5oczWdAXqCbQW0ly7CtlweRQQ3JTZTXmvml6NAs322vc5xqTp3IAB6sBhGtQtKM_/embed?start=true&loop=true&delayms=5000&rm=minimal" allowfullscreen></iframe>
+        <div class="cursor-overlay"></div>
     </div>
 
     <script>
-        function hideCursor() {
-            document.documentElement.style.cursor = 'none';
-            document.body.style.cursor = 'none';
-        }
-
-        function createCursorBlocker() {
-            const blocker = document.createElement('div');
-            blocker.className = 'cursor-blocker';
-            document.body.appendChild(blocker);
-        }
-
-        function recreateCursorBlocker() {
-            const existingBlocker = document.querySelector('.cursor-blocker');
-            if (existingBlocker) {
-                existingBlocker.remove(); // Remove the existing blocker
+        // Script to ensure cursor remains hidden even if iframe content changes
+        document.addEventListener('DOMContentLoaded', function() {
+            const iframe = document.getElementById('presentation');
+            
+            // Approach 1: Try to inject CSS into iframe when it loads
+            iframe.addEventListener('load', function() {
+                try {
+                    const iframeDocument = iframe.contentDocument || iframe.contentWindow.document;
+                    
+                    // Create and inject a style element
+                    const style = iframeDocument.createElement('style');
+                    style.textContent = '* { cursor: none !important; }';
+                    iframeDocument.head.appendChild(style);
+                } catch(e) {
+                    // Silent catch - will fail for cross-origin iframes due to security restrictions
+                    // But we have other fallback methods in place
+                }
+            });
+            
+            // Approach 2: Set a transparent overlay that has cursor:none
+            const overlay = document.querySelector('.cursor-overlay');
+            
+            // Make sure cursor stays hidden even when moving in and out of iframe
+            document.addEventListener('mouseover', function() {
+                document.body.style.cursor = 'none';
+            });
+            
+            // For Samsung Tizen browser which might have specific handling
+            if (navigator.userAgent.indexOf('Tizen') > -1) {
+                // Additional Tizen-specific handling if needed
+                document.documentElement.style.setProperty('cursor', 'none', 'important');
             }
-            createCursorBlocker(); // Create a new one
-        }
-
-        function forceRecreateCursorBlocker() {
-            recreateCursorBlocker();
-            setInterval(forceRecreateCursorBlocker, 1000); // Recreate every second
-        }
-
-        // Initially hide the cursor and create the blocker
-        hideCursor();
-        forceRecreateCursorBlocker(); // Start the periodic recreation
+        });
     </script>
 </body>
 </html>
