@@ -52,9 +52,14 @@
         function hideCursor() {
             document.documentElement.style.cursor = 'none';
             document.body.style.cursor = 'none';
+
+            // Check if the iframe is accessible and hide the cursor inside it
             let iframe = document.getElementById('presentation');
-            if (iframe) {
-                iframe.style.visibility = 'hidden';  // Hide cursor by making iframe invisible to interaction
+            if (iframe && iframe.contentWindow) {
+                let iframeDoc = iframe.contentWindow.document;
+                if (iframeDoc) {
+                    iframeDoc.body.style.cursor = 'none'; // Hide cursor inside iframe
+                }
             }
         }
 
