@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hide Cursor</title>
+    <style>
+        /* Hide the cursor using CSS */
+        body {
+            cursor: none; /* Works in most modern browsers */
+        }
+    </style>
+    <script>
+        // Additional JavaScript to ensure cursor hiding in case CSS fails
+        document.addEventListener("mousemove", function(event) {
+            event.target.style.cursor = "none";
+        });
+    </script>
+</head>
+<body>
+    <h1>Cursor Hidden</h1>
+    <p>Move your mouse around—your cursor should be hidden!</p>
+</body>
+</html>
