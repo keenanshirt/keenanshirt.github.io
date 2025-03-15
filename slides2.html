@@ -13,17 +13,35 @@
             height: 100%;
             width: 100%;
         }
+        .container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+        }
         iframe {
             position: absolute;
             top: 0;
             left: 0;
-            width: 100vw;
-            height: 100vh;
+            width: 100%;
+            height: 100%;
             border: none;
+        }
+        .cursor-blocker {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: transparent;
+            cursor: none;
+            z-index: 9999; /* Ensure it's above the iframe */
         }
     </style>
 </head>
 <body>
-    <iframe src="https://docs.google.com/presentation/d/e/2PACX-1vQEYMewLXQQATrP5oczWdAXqCbQW0ly7CtlweRQQ3JTZTXmvml6NAs322vc5xqTp3IAB6sBhGtQtKM_/embed?start=true&loop=true&delayms=5000&rm=minimal" allowfullscreen></iframe>
+    <div class="container">
+        <iframe src="https://docs.google.com/presentation/d/e/2PACX-1vQEYMewLXQQATrP5oczWdAXqCbQW0ly7CtlweRQQ3JTZTXmvml6NAs322vc5xqTp3IAB6sBhGtQtKM_/embed?start=true&loop=true&delayms=5000&rm=minimal" allowfullscreen></iframe>
+        <div class="cursor-blocker"></div>
+    </div>
 </body>
 </html>
