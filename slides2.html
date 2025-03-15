@@ -45,9 +45,24 @@
     </div>
 
     <script>
-        document.addEventListener('mousemove', function() {
+        function hideCursor() {
             document.documentElement.style.cursor = 'url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNgYAAAAAMAASsJTYQAAAAASUVORK5CYII=), auto';
-        });
+        }
+
+        function lockPointer() {
+            const blocker = document.querySelector('.cursor-blocker');
+            blocker.requestPointerLock = blocker.requestPointerLock || blocker.mozRequestPointerLock || blocker.webkitRequestPointerLock;
+            if (blocker.requestPointerLock) {
+                blocker.requestPointerLock();
+            }
+        }
+
+        // Enforce cursor hiding every frame
+        setInterval(hideCursor, 50);
+
+        // Try to lock pointer on user interaction
+        document.addEventListener('click', lockPointer);
+        document.addEventListener('mousemove', hideCursor);
     </script>
 </body>
 </html>
