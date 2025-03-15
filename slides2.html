@@ -3,165 +3,166 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Samsung TV Presentation with Hidden Cursor</title>
+    <title>Auto Image Slideshow</title>
     <style>
-        body, html {
+        body {
+            font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
-            height: 100%;
-            width: 100%;
-            overflow: hidden;
-            cursor: none !important;
-            user-select: none;
-            -webkit-user-select: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background-color: #f5f5f5;
         }
         
-        /* Presentation wrapper */
-        .presentation-wrapper {
+        .slideshow-container {
+            max-width: 800px;
             position: relative;
-            width: 100vw;
-            height: 100vh;
+            margin: 20px auto;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
         }
         
-        /* The iframe */
-        #presentation {
+        .slide {
+            display: none;
             width: 100%;
-            height: 100%;
-            border: none;
-            position: absolute;
-            top: 0;
-            left: 0;
-            z-index: 1;
         }
         
-        /* Multiple overlays to ensure cursor capture */
-        .cursor-hider {
-            position: fixed;
-            top: 0;
-            left: 0;
+        .slide img {
             width: 100%;
-            height: 100%;
-            z-index: 999;
-            background-color: transparent;
-            pointer-events: none; /* Allow clicks to pass through */
-            cursor: none !important;
+            height: 400px;
+            object-fit: cover;
         }
         
-        /* Use a fake invisible cursor image for Samsung browsers */
-        * {
-            cursor: url('data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'), auto !important;
+        .active {
+            display: block;
+            animation: fadeIn 1s;
+        }
+        
+        @keyframes fadeIn {
+            from {opacity: 0.4}
+            to {opacity: 1}
+        }
+        
+        .controls {
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .dot {
+            cursor: pointer;
+            height: 12px;
+            width: 12px;
+            margin: 0 5px;
+            background-color: #bbb;
+            border-radius: 50%;
+            display: inline-block;
+            transition: background-color 0.6s ease;
+        }
+        
+        .active-dot, .dot:hover {
+            background-color: #717171;
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
         }
     </style>
 </head>
 <body>
-    <!-- Presentation container -->
-    <div class="presentation-wrapper">
-        <iframe id="presentation" src="https://docs.google.com/presentation/d/e/2PACX-1vQEYMewLXQQATrP5oczWdAXqCbQW0ly7CtlweRQQ3JTZTXmvml6NAs322vc5xqTp3IAB6sBhGtQtKM_/embed?start=true&loop=true&delayms=5000&rm=minimal" allowfullscreen></iframe>
+    <h1>Image Slideshow</h1>
+    
+    <div class="slideshow-container">
+        <div class="slide">
+            <img src="/api/placeholder/800/400" alt="Image 1">
+        </div>
+        
+        <div class="slide">
+            <img src="/api/placeholder/800/400" alt="Image 2">
+        </div>
+        
+        <div class="slide">
+            <img src="/api/placeholder/800/400" alt="Image 3">
+        </div>
+        
+        <div class="slide">
+            <img src="/api/placeholder/800/400" alt="Image 4">
+        </div>
+        
+        <div class="slide">
+            <img src="/api/placeholder/800/400" alt="Image 5">
+        </div>
     </div>
     
-    <!-- Multiple overlays for redundancy -->
-    <div class="cursor-hider" id="overlay-1"></div>
-    <div class="cursor-hider" id="overlay-2"></div>
-
+    <div class="controls">
+        <span class="dot" onclick="currentSlide(1)"></span>
+        <span class="dot" onclick="currentSlide(2)"></span>
+        <span class="dot" onclick="currentSlide(3)"></span>
+        <span class="dot" onclick="currentSlide(4)"></span>
+        <span class="dot" onclick="currentSlide(5)"></span>
+    </div>
+    
     <script>
-        // Function to continuously maintain cursor hiding
-        function maintainCursorHiding() {
-            // Force cursor hiding through inline styles
-            document.body.style.cursor = 'none';
-            document.documentElement.style.cursor = 'none';
-            
-            // Create and append new cursor hider layers periodically
-            const overlay = document.createElement('div');
-            overlay.className = 'cursor-hider';
-            overlay.style.zIndex = (1000 + Math.floor(Math.random() * 100)); // Random high z-index
-            document.body.appendChild(overlay);
-            
-            // Limit the number of overlays to prevent memory issues
-            const overlays = document.querySelectorAll('.cursor-hider');
-            if (overlays.length > 5) {
-                document.body.removeChild(overlays[0]);
-            }
+        let slideIndex = 0;
+        let autoSlideInterval;
+        
+        // Start automatic slideshow
+        function startAutoSlide() {
+            autoSlideInterval = setInterval(() => {
+                slideIndex++;
+                if (slideIndex > 5) {
+                    slideIndex = 1;
+                }
+                showSlides(slideIndex);
+            }, 3000); // Change image every 3 seconds
         }
         
-        // Run cursor hiding on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            // Apply initial cursor hiding
-            document.body.style.cursor = 'none';
-            document.documentElement.style.cursor = 'none';
-            
-            // Target Samsung Tizen browser specifically
-            if (navigator.userAgent.indexOf('Tizen') > -1 || 
-                navigator.userAgent.indexOf('SMART-TV') > -1 || 
-                navigator.userAgent.indexOf('SmartTV') > -1) {
-                
-                // Samsung TV specific cursor hiding technique
-                const samsungStyle = document.createElement('style');
-                samsungStyle.innerHTML = `
-                    @-webkit-keyframes hideCursor {
-                        to { cursor: none; }
-                    }
-                    @keyframes hideCursor {
-                        to { cursor: none; }
-                    }
-                    body, html, * {
-                        -webkit-animation: hideCursor 0.1s linear 0s infinite;
-                        animation: hideCursor 0.1s linear 0s infinite;
-                        cursor: url('data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'), none !important;
-                    }
-                `;
-                document.head.appendChild(samsungStyle);
-                
-                // Continuously monitor and maintain cursor hiding
-                setInterval(maintainCursorHiding, 500);
-                
-                // Create observer to watch for DOM changes
-                const observer = new MutationObserver(function() {
-                    document.body.style.cursor = 'none';
-                    document.documentElement.style.cursor = 'none';
-                    
-                    // Force cursor hiding on all elements after DOM changes
-                    const allElements = document.querySelectorAll('*');
-                    for (let i = 0; i < allElements.length; i++) {
-                        allElements[i].style.cursor = 'none';
-                    }
-                });
-                
-                // Start observing the document for DOM changes
-                observer.observe(document.documentElement, {
-                    childList: true,
-                    subtree: true,
-                    attributes: true
-                });
-            }
-            
-            // Event listeners for cursor hiding when mouse moves
-            document.addEventListener('mousemove', function() {
-                document.body.style.cursor = 'none';
-            });
-            
-            // Handle resize events (slides changing might trigger layout shifts)
-            window.addEventListener('resize', function() {
-                document.body.style.cursor = 'none';
-                document.documentElement.style.cursor = 'none';
-            });
-        });
+        // Stop automatic slideshow
+        function stopAutoSlide() {
+            clearInterval(autoSlideInterval);
+        }
         
-        // Extra aggressive approach: continuously force cursor hiding
-        setInterval(function() {
-            document.body.style.cursor = 'none';
-            document.documentElement.style.cursor = 'none';
+        // Show slides
+        function showSlides(n) {
+            const slides = document.getElementsByClassName("slide");
+            const dots = document.getElementsByClassName("dot");
             
-            // Extra measure for Samsung TVs - create new style elements periodically
-            const style = document.createElement('style');
-            style.innerHTML = '* { cursor: none !important; }';
-            document.head.appendChild(style);
-            
-            // Limit the number of style elements to prevent memory issues
-            const styles = document.querySelectorAll('style');
-            if (styles.length > 20) {
-                document.head.removeChild(styles[0]);
+            if (n > slides.length) {
+                slideIndex = 1;
             }
-        }, 1000);
+            if (n < 1) {
+                slideIndex = slides.length;
+            }
+            
+            // Hide all slides
+            for (let i = 0; i < slides.length; i++) {
+                slides[i].classList.remove("active");
+                dots[i].classList.remove("active-dot");
+            }
+            
+            // Show current slide
+            slides[slideIndex - 1].classList.add("active");
+            dots[slideIndex - 1].classList.add("active-dot");
+        }
+        
+        // Show specific slide when dot is clicked
+        function currentSlide(n) {
+            stopAutoSlide();
+            slideIndex = n;
+            showSlides(slideIndex);
+            startAutoSlide();
+        }
+        
+        // Initialize slideshow
+        window.onload = function() {
+            slideIndex = 1;
+            showSlides(slideIndex);
+            startAutoSlide();
+        };
     </script>
 </body>
 </html>
