@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Slideshow</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: black;
+            overflow: hidden;
+            cursor: none;
+        }
+        .slideshow {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+        }
+        .slideshow img {
+            position: absolute;
+            width: 100%; height: 100%; object-fit: contain;
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+        }
+        .slideshow img.active {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="slideshow"></div>
+    
+    <script>
+        let images = [];
+        let currentIndex = 0;
+        
+        fetch('images.json')
+            .then(response => response.json())
+            .then(data => {
+                images = data.images;
+                preloadImages();
+                startSlideshow();
+            });
+        
+        function preloadImages() {
+            const slideshow = document.querySelector('.slideshow');
+            images.forEach((src, index) => {
+                const img = document.createElement('img');
+                img.src = src;
+                if (index === 0) img.classList.add('active');
+                slideshow.appendChild(img);
+            });
+        }
+        
+        function startSlideshow() {
+            setInterval(() => {
+                const slides = document.querySelectorAll('.slideshow img');
+                slides[currentIndex].classList.remove('active');
+                currentIndex = (currentIndex + 1) % images.length;
+                slides[currentIndex].classList.add('active');
+            }, 5000);
+        }
+    </script>
+</body>
+</html>
