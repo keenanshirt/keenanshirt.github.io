@@ -57,6 +57,20 @@
                 slides[currentIndex].classList.add('active');
             }, 6000);
         }
+
+        function resetCursorTimer() {
+            document.body.style.cursor = 'auto';
+            clearTimeout(cursorTimer);
+            cursorTimer = setTimeout(() => {
+                document.body.style.cursor = 'none';
+            }, 5000);
+        }
+
+        document.addEventListener('mousemove', resetCursorTimer);
+        document.addEventListener('keydown', resetCursorTimer);
+
+        resetCursorTimer(); // Initialize hiding cursor after 5 seconds
+        setInterval(resetCursorTimer, 5000);
     </script>
 </head>
 <body>
