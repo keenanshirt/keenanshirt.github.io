@@ -40,7 +40,7 @@
                 preloadImages();
                 startSlideshow();
             });
-        
+
         function preloadImages() {
             const slideshow = document.querySelector('.slideshow');
             images.forEach((src, index) => {
@@ -50,7 +50,7 @@
                 slideshow.appendChild(img);
             });
         }
-        
+
         function startSlideshow() {
             setInterval(() => {
                 const slides = document.querySelectorAll('.slideshow img');
@@ -68,9 +68,15 @@
             }, 2000);
         }
 
+        function autoHideCursor() {
+            document.body.classList.add('hide-cursor');
+        }
+
         document.addEventListener('mousemove', resetCursorTimer);
         document.addEventListener('keydown', resetCursorTimer);
         resetCursorTimer();
+
+        setInterval(autoHideCursor, 20000);
     </script>
 </head>
 <body>
