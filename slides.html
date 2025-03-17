@@ -59,11 +59,11 @@
 
         function resetCursorTimer() {
             document.body.style.cursor = 'auto';
-            document.div.style.cursor = 'auto';
+            document.querySelector("div").style.cursor = 'auto';
             clearTimeout(cursorTimer);
             cursorTimer = setTimeout(() => {
                 document.body.style.cursor = 'none';
-                document.div.style.cursor = 'none';
+                document.querySelector("div").style.cursor = 'none';
             }, 2000);
         }
 
