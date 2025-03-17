@@ -9,6 +9,8 @@
         body {
             background: black;
             overflow: hidden;
+        }
+        .hide-cursor {
             cursor: none;
         }
         .slideshow {
@@ -29,7 +31,8 @@
     <script>
         let images = [];
         let currentIndex = 0;
-        
+        let cursorTimer;
+
         fetch('images.json')
             .then(response => response.json())
             .then(data => {
@@ -56,8 +59,19 @@
                 slides[currentIndex].classList.add('active');
             }, 6000);
         }
+
+        function resetCursorTimer() {
+            document.body.classList.remove('hide-cursor');
+            clearTimeout(cursorTimer);
+            cursorTimer = setTimeout(() => {
+                document.body.classList.add('hide-cursor');
+            }, 2000);
+        }
+
+        document.addEventListener('mousemove', resetCursorTimer);
+        document.addEventListener('keydown', resetCursorTimer);
+        resetCursorTimer();
     </script>
-    
 </head>
 <body>
     <div class="slideshow"></div>
