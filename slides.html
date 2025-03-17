@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Image Slideshow</title>
+    <title>TV Slideshow</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -26,10 +26,6 @@
             opacity: 1;
         }
     </style>
-</head>
-<body>
-    <div class="slideshow"></div>
-    
     <script>
         let images = [];
         let currentIndex = 0;
@@ -58,8 +54,12 @@
                 slides[currentIndex].classList.remove('active');
                 currentIndex = (currentIndex + 1) % images.length;
                 slides[currentIndex].classList.add('active');
-            }, 5000);
+            }, 6000);
         }
     </script>
+    
+</head>
+<body>
+    <div class="slideshow"></div>
 </body>
 </html>
