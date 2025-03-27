@@ -27,51 +27,75 @@
         }
     </style>
     <script defer>
-        let images = [];
-        let currentIndex = 0;
-        let cursorTimer;
-
-        fetch('images.json')
-            .then(response => response.json())
-            .then(data => {
-                images = data.images;
-                preloadImages();
-                startSlideshow();
-            });
-
-        function preloadImages() {
+        document.addEventListener('DOMContentLoaded', () => {
             const slideshow = document.querySelector('.slideshow');
-            images.forEach((src, index) => {
-                const img = document.createElement('img');
-                img.src = src;
-                if (index === 0) img.classList.add('active');
-                slideshow.appendChild(img);
-            });
-        }
+            let currentIndex = 0;
+            let imageList = [];
+            let intervalId;
+    
+            const fetchImages = async () => {
+                try {
+                    const response = await fetch('images.json');
+                    const data = await response.json();
+                    return data.images;
+                } catch (error) {
+                    console.error('Error fetching images:', error);
+                    return [];
+                }
+            };
+    
+            const preloadImages = (images) => {
+                slideshow.innerHTML = ''; // Clear existing images
+                images.forEach((src, index) => {
+                    const img = document.createElement('img');
+                    img.src = src;
+                    if (index === 0) img.classList.add('active');
+                    slideshow.appendChild(img);
+                });
+                imageList = images;
+            };
+    
+            const startSlideshow = () => {
+                if (intervalId) clearInterval(intervalId);
+                intervalId = setInterval(() => {
+                    const slides = document.querySelectorAll('.slideshow img');
+                    slides[currentIndex].classList.remove('active');
+                    currentIndex = (currentIndex + 1) % imageList.length;
+                    slides[currentIndex].classList.add('active');
+                }, 6000);
+            };
+    
+            const checkForUpdates = async () => {
+                const newImages = await fetchImages();
+                if (JSON.stringify(newImages) !== JSON.stringify(imageList)) {
+                    preloadImages(newImages);
+                    startSlideshow();
+                }
+            };
+    
+            const initializeSlideshow = async () => {
+                const initialImages = await fetchImages();
+                preloadImages(initialImages);
+                startSlideshow();
+                setInterval(checkForUpdates, 10 * 60 * 1000); // Check every 10 minutes
+            };
 
-        function startSlideshow() {
-            setInterval(() => {
-                const slides = document.querySelectorAll('.slideshow img');
-                slides[currentIndex].classList.remove('active');
-                currentIndex = (currentIndex + 1) % images.length;
-                slides[currentIndex].classList.add('active');
-            }, 6000);
-        }
 
-         
-     /*   function resetCursorTimer() {
-            document.body.style.cursor = 'auto';
-            document.querySelector("div").style.cursor = 'auto';
-            clearTimeout(cursorTimer);
-            cursorTimer = setTimeout(() => {
-                document.body.style.cursor = 'none';
-                document.querySelector("div").style.cursor = 'none';
-            }, 2000);
-        }
-        document.addEventListener('mousemove', resetCursorTimer);
-        document.addEventListener('keydown', resetCursorTimer);
-      */  
-        
+      /*   function resetCursorTimer() {
+                document.body.style.cursor = 'auto';
+                document.querySelector("div").style.cursor = 'auto';
+                clearTimeout(cursorTimer);
+                cursorTimer = setTimeout(() => {
+                    document.body.style.cursor = 'none';
+                    document.querySelector("div").style.cursor = 'none';
+                }, 2000);
+            }
+            document.addEventListener('mousemove', resetCursorTimer);
+            document.addEventListener('keydown', resetCursorTimer);
+     */  
+            
+            initializeSlideshow();
+        });
     </script>
 </head>
 <body>
