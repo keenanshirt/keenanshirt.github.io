@@ -6,6 +6,49 @@ xmlns:m="http://schemas.microsoft.com/office/2004/12/omml"
 xmlns="http://www.w3.org/TR/REC-html40">
 
 <head>
+
+<style>
+.tooltip {
+  position: relative;
+  display: inline-block;
+}
+
+.tooltip .tooltiptext {
+  visibility: hidden;
+  width: 140px;
+  background-color: #555;
+  color: #fff;
+  text-align: center;
+  border-radius: 6px;
+  padding: 5px;
+  position: absolute;
+  z-index: 1;
+  bottom: 150%;
+  left: 50%;
+  margin-left: -75px;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.tooltip .tooltiptext::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: #555 transparent transparent transparent;
+}
+
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+  opacity: 1;
+}
+</style>
+
+
+	
 <meta http-equiv=Content-Type content="text/html; charset=utf-8">
 <meta name=ProgId content=Word.Document>
 <meta name=Generator content="Microsoft Word 15">
@@ -1212,6 +1255,26 @@ table.MsoTableGrid
 <body lang=EN-US link=blue vlink="#954F72" style='tab-interval:.5in;word-wrap:
 break-word'>
 
+
+<div class="tooltip">
+<button onclick="myFunction1()" onmouseout="outFunc2()">
+  <span class="tooltiptext" id="myTooltip">Copy to clipboard</span>
+  Copy Option 1
+  </button>
+</div>
+	<div class="tooltip">
+<button onclick="myFunction2()" onmouseout="outFunc2()">
+  <span class="tooltiptext" id="myTooltip">Copy to clipboard</span>
+  Copy Option 2
+  </button>
+</div>
+	<div class="tooltip">
+<button onclick="myFunction3()" onmouseout="outFunc3()">
+  <span class="tooltiptext" id="myTooltip">Copy to clipboard</span>
+  Copy Option 3
+  </button>
+</div>
+
 <div class=WordSection1>
 
 <h1 align=center style='text-align:center'><b><span style='font-size:20.0pt;
@@ -1220,7 +1283,7 @@ color:#440099'>Arts Fest 2025 OFA Email Signature Instructions<o:p></o:p></span>
 <p class=MsoNormal style='margin-bottom:12.0pt;tab-stops:143.4pt'><b>Option 1:<span
 style='mso-tab-count:1'>                                </span><o:p></o:p></b></p>
 
-<table class=MsoNormalTable border=0 cellspacing=0 cellpadding=0 width=582
+<table id="myInput1" class=MsoNormalTable border=0 cellspacing=0 cellpadding=0 width=582
  style='width:436.5pt;border-collapse:collapse;mso-yfti-tbllook:1184;
  mso-padding-alt:0in 0in 0in 0in'>
  <tr style='mso-yfti-irow:0;mso-yfti-firstrow:yes;mso-yfti-lastrow:yes;
@@ -1285,7 +1348,7 @@ style='mso-tab-count:1'>                            
 
 <p class=MsoNormal style='margin-bottom:12.0pt'><b>Option 2:<o:p></o:p></b></p>
 
-<table class=MsoNormalTable border=0 cellspacing=0 cellpadding=0 width=499
+<table id="myInput2" class=MsoNormalTable border=0 cellspacing=0 cellpadding=0 width=499
  style='width:374.05pt;border-collapse:collapse;mso-yfti-tbllook:1184;
  mso-padding-alt:0in 0in 0in 0in'>
  <tr style='mso-yfti-irow:0;mso-yfti-firstrow:yes;mso-yfti-lastrow:yes;
@@ -1333,7 +1396,7 @@ style='mso-tab-count:1'>                            
 
 <p class=MsoNormal style='margin-bottom:12.0pt'><b>Option 3: (GIF)<o:p></o:p></b></p>
 
-<table class=MsoNormalTable border=0 cellspacing=0 cellpadding=0 width=582
+<table id="myInput3" class=MsoNormalTable border=0 cellspacing=0 cellpadding=0 width=582
  style='width:436.5pt;border-collapse:collapse;mso-yfti-tbllook:1184;
  mso-padding-alt:0in 0in 0in 0in'>
  <tr style='mso-yfti-irow:0;mso-yfti-firstrow:yes;mso-yfti-lastrow:yes;
@@ -1555,4 +1618,56 @@ minor-latin;mso-bidi-theme-font:minor-latin'><o:p></o:p></span></p>
 
 </body>
 
+
+<script>
+function myFunction1() {
+  var copyText = document.getElementById("myInput1");
+  copyText.select();
+  copyText.setSelectionRange(0, 99999);
+  navigator.clipboard.writeText(copyText.value);
+  
+  var tooltip = document.getElementById("myTooltip1");
+  tooltip.innerHTML = "Copied: " + copyText.value;
+}
+
+function outFunc1() {
+  var tooltip = document.getElementById("myTooltip1");
+  tooltip.innerHTML = "Copy to clipboard";
+}
+</script>
+
+	<script>
+function myFunction2() {
+  var copyText = document.getElementById("myInput2");
+  copyText.select();
+  copyText.setSelectionRange(0, 99999);
+  navigator.clipboard.writeText(copyText.value);
+  
+  var tooltip = document.getElementById("myTooltip2");
+  tooltip.innerHTML = "Copied: " + copyText.value;
+}
+
+function outFunc2() {
+  var tooltip = document.getElementById("myTooltip2");
+  tooltip.innerHTML = "Copy to clipboard";
+}
+</script>
+	<script>
+function myFunction3() {
+  var copyText = document.getElementById("myInput3");
+  copyText.select();
+  copyText.setSelectionRange(0, 99999);
+  navigator.clipboard.writeText(copyText.value);
+  
+  var tooltip = document.getElementById("myTooltip3");
+  tooltip.innerHTML = "Copied: " + copyText.value;
+}
+
+function outFunc3() {
+  var tooltip = document.getElementById("myTooltip3");
+  tooltip.innerHTML = "Copy to clipboard";
+}
+</script>
+
+	
 </html>
