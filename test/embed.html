@@ -1,6 +1,53 @@
-<div style="position: relative; padding-bottom: 56.25%; height: 0;" class="video-container">
-    <iframe style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; max-height: 500px" width="560" height="315" src="https://player.vimeo.com/video/1078434459?background=1" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; color: white; font-size: 82px; font-weight: bold; text-shadow: 6px 6px 8px black;">
-        We can imagine you here.
-    </div>
+<style>
+/* 400-pixel-tall wrapper ---------------------------------------- */
+.video-box {
+  position: relative;
+  width: 100%;
+  height: 400px;        /* fixed height */
+  overflow: hidden;     /* crop the parts that don't fit */
+}
+
+/* Make the iframe ALWAYS fill width, with height adjusted as needed --- */
+.video-box iframe {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  
+  /* Force width to 100% minimum, height can be larger and cropped */
+  width: 100% !important; /* Force width to be exactly 100% */
+  height: 56.25vw !important; /* 16:9 aspect ratio (9/16 = 0.5625) */
+  min-height: 100%;      /* Ensure it's at least as tall as container */
+  
+  transform: translate(-50%, -50%);   /* keep it centred */
+  pointer-events: none;               /* clicks pass through (remove if needed) */
+}
+
+/* Centred overlay text ------------------------------------------ */
+.video-box .overlay-text {
+  position: absolute;
+  inset: 0;                 /* shorthand for top:0 right:0 bottom:0 left:0 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #fff;
+  font-size: 82px;
+  font-weight: bold;
+  text-align: center;
+  text-shadow: 6px 6px 8px #000;
+  pointer-events: none;
+}
+</style>
+
+<div class="video-box">
+  <iframe
+    src="https://player.vimeo.com/video/1078434459?background=1"
+    frameborder="0"
+    allow="autoplay; encrypted-media; picture-in-picture"
+    allowfullscreen>
+  </iframe>
+
+  <div class="overlay-text">
+    We can imagine you here.
+  </div>
 </div>
