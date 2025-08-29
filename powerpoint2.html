@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Cropped Iframe (All Sides)</title>
+
+    <style>
+        body {
+            margin: 0; /* Removes default browser margin from the page body */
+            background-color: black; /* Sets the background color of the page to black */
+        }
+
+        /* 1. The container that sets the aspect ratio and clips the content. */
+        .iframe-cropper {
+            position: relative;
+            overflow: hidden; /* This hides content that goes beyond the container. */
+            width: 100%;
+            /*
+              Use the standard 16:9 aspect ratio to match the iframe content's
+              forced aspect ratio from the `wdAr` parameter in the URL.
+            */
+            padding-top: 56.25%;
+        }
+
+        /* 2. The iframe, positioned and sized inside the container. */
+        .iframe-cropper iframe {
+            position: absolute;
+            /* Shift the iframe -1px up and -1px left to hide those borders. */
+            top: -1px;
+            left: -1px;
+            /*
+              Make the iframe 2px wider than the container to crop 1px
+              from the left and right sides.
+            */
+            width: calc(100% + 2px);
+            /*
+              Make the iframe 24px taller than the container to crop 1px
+              from the top and 23px from the bottom.
+            */
+            height: calc(100% + 24px);
+            border: 0;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="iframe-cropper">
+      <iframe
+        src="https://hu.sharepoint.com/sites/FAS-OFA/_layouts/15/Doc.aspx?sourcedoc={bfbee344-43c6-4071-b631-f20be56d003b}&em=2&wdAr=1.7777777777777777&wdEaa=1"
+        title="Embedded Microsoft Office presentation"
+        allowfullscreen>
+      </iframe>
+    </div>
+
+</body>
+</html>
