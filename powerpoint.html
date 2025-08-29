@@ -1,27 +1,63 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Embedded PowerPoint</title>
-  <style>
-    /* Optional: center the container on the page */
-    body {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      margin: 0;
-      background-color: #f0f0f0;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Cropped Iframe (All Sides)</title>
+
+    <style>
+        body {
+            margin: 0; /* Removes default browser margin from the page body */
+        }
+
+        /* 1. The container that sets the aspect ratio and clips the content. */
+        .iframe-cropper {
+            position: relative;
+            overflow: hidden; /* This hides content that goes beyond the container. */
+            width: 100%;
+            /*
+              Calculate padding-top for aspect ratio,
+              considering the 1px top crop.
+              Original iframe height: 2160px
+              Original iframe width: 3840px
+              Desired visible height = 2160 - 1 (top) - 23 (bottom) = 2136px
+              Desired visible width = 3840 - 1 (left) - 1 (right) = 3838px
+
+              Aspect ratio = (Visible Height / Visible Width) * 100
+                           = (2136 / 3838) * 100 = 55.65398645127671%
+            */
+            padding-top: 55.65398645127671%;
+        }
+
+        /* 2. The iframe, positioned and sized inside the container. */
+        .iframe-cropper iframe {
+            position: absolute;
+            /* Shift the iframe -1px up and -1px left to hide those borders. */
+            top: -1px;
+            left: -1px;
+            /*
+              Make the iframe 2px wider (1px left + 1px right) than the container.
+              This allows the container to clip 1px from each side.
+            */
+            width: calc(100% + 2px);
+            /*
+              Make the iframe taller to hide 1px from the top and 23px from the bottom.
+              Total extra height = 1px (top) + 23px (bottom) = 24px
+            */
+            height: calc(100% + 24px);
+            border: 0;
+        }
+    </style>
 </head>
 <body>
-  <div style="width: 3840px; height: calc(2160px - 23px); overflow: hidden;">
-    <iframe 
-      src="https://1drv.ms/p/c/4db78883ef1c3628/IQRaMaDQExWjQp58sgIZolecAW6Nj7-LJvkv-84c8_eOsWM?action=embedview&em=2&wdHideToolbar=true&wdDownloadButton=false&wdStartOn=1" 
-      width="3840" height="2160" frameborder="0" scrolling="no" allowfullscreen>
-    </iframe>
-  </div>
+
+    <div class="iframe-cropper">
+      <iframe
+        src="https://1drv.ms/p/c/4db78883ef1c3628/IQRaMaDQExWjQp58sgIZolecAW6Nj7-LJvkv-84c8_eOsWM?em=2&wdAr=1.7777777777777777&wdEaaCheck=1"
+        title="Embedded Microsoft Office presentation"
+        allowfullscreen>
+      </iframe>
+    </div>
+
 </body>
 </html>
