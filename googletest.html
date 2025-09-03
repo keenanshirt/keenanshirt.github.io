@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Slides Embed — Try to Hide Cursor</title>
+  <style>
+    html, body { height: 100%; margin: 0; background: #000; }
+    .page { height: 100%; display: flex; align-items: center; justify-content: center; }
+    .slide-wrap { position: relative; width: 1920px; height: 1080px; background: #000; }
+    .slide-wrap iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+
+    /* Belt-and-suspenders: hide cursor everywhere we can */
+    html, body, iframe, .cursor-hide, * { cursor: none !important; }
+
+    /* Full-cover overlay to keep the page's own cursor hidden and block interaction */
+    .cursor-hide {
+      position: absolute; inset: 0;
+      z-index: 2147483647;
+      pointer-events: auto;
+      user-select: none;
+      background: transparent;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="slide-wrap">
+      <iframe
+        src="https://docs.google.com/presentation/d/e/2PACX-1vRzolERZNdEYTEBnA52IGj0IlkMDZPHEJG5GvptryK5PKPD0Nauz0ULSxUdizotvzOpHGVa34hfVp3S/pubembed?start=true&loop=true&delayms=3000&rm=minimal"
+        frameborder="0"
+        allowfullscreen
+        mozallowfullscreen
+        webkitallowfullscreen
+      ></iframe>
+      <div class="cursor-hide" aria-hidden="true"></div>
+    </div>
+  </div>
+</body>
+</html>
