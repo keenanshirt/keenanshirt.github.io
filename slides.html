@@ -8,104 +8,98 @@
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
   <link rel="preconnect" href="https://docs.google.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <title>Samsung TV Signage — 1080p Fit (LITE)</title>
+  <title>Samsung TV Signage — Slides Embed Optimized</title>
   <style>
     html, body {
       height: 100%;
       margin: 0;
       background: #000;
-      overflow: hidden;            /* no scrollbars */
-      cursor: none;                /* hide cursor if browser allows */
-      -webkit-user-select: none;   
+      overflow: hidden;              /* no scrollbars */
+      cursor: none;                  /* hide cursor if allowed */
+      -webkit-user-select: none; 
       -moz-user-select: none;
       user-select: none;
       -webkit-touch-callout: none;
       touch-action: manipulation;
     }
-    /* Fixed 1080p stage that we scale to fit the screen */
-    #stage {
-      position: absolute;
-      width: 1920px;
-      height: 1080px;
-      left: 0; top: 0;
-      transform-origin: top left;
-      will-change: transform;
-      background: #000; /* avoid flash */
-    }
-    iframe#deck {
-      width: 1920px;
-      height: 1080px;
-      border: 0;
-      background: #000;
-      display: block;
-      transform: translateZ(0); /* keep a single composited layer */
-      backface-visibility: hidden;
-    }
+    /* Native full-viewport iframe (no transforms) */
+    #nativeWrap, #fitWrap { position: fixed; inset: 0; }
+    #nativeWrap iframe, #fitWrap iframe { width: 100vw; height: 100vh; border: 0; background: #000; display: block; }
+
+    /* 1080p-fit stage (optional mode) */
+    #fitWrap { display: none; }
+    #stage { position: absolute; width: 1920px; height: 1080px; left: 0; top: 0; transform-origin: top left; }
+    #stage iframe { width: 1920px; height: 1080px; border: 0; display: block; background: #000; }
+
     ::-webkit-scrollbar { display: none; }
   </style>
 </head>
 <body>
-  <div id="stage">
-    <iframe
-      id="deck"
-      src="https://docs.google.com/presentation/d/e/2PACX-1vTcvwa1irS_Vah7LsHWKBwzs4oiJImAAuqIa2ZOX7STMw-Ktd7vF--YyTVvxdcsyPpvqY697Pm_CYMA/pubembed?start=true&loop=true&delayms=5000&rm=minimal"
-      allow="autoplay; fullscreen"
-      allowfullscreen
-      mozallowfullscreen
-      webkitallowfullscreen
-      referrerpolicy="no-referrer"
-    ></iframe>
-  </div>
+  <!-- Mode A: Native full-viewport (default, best chance for smoother transitions on Tizen) -->
+  <div id="nativeWrap"><iframe id="deckNative" loading="eager" importance="high"></iframe></div>
+
+  <!-- Mode B: 1080p-fit (only if native still crops/letterboxes unexpectedly) -->
+  <div id="fitWrap"><div id="stage"><iframe id="deckFit" loading="eager" importance="high"></iframe></div></div>
 
   <script>
-    // 1080p-fit scaler: render Slides at 1920x1080 CSS pixels, scale to the screen.
+    // Keep using the Google Slides EMBED, but minimize overhead for Tizen.
+    // Two modes:
+    //   mode=native   (default) — iframe is 100vw x 100vh, NO CSS transforms
+    //   mode=fit1080            — render at 1920x1080, scale to fit with a single transform
+    // You can also pass delay=<ms> to change slide delay (default 5000ms)
+    // Example: signage.html?mode=native&delay=7000
+
     (function(){
-      var stage = document.getElementById('stage');
+      var qp = new URLSearchParams(location.search);
+      var mode   = (qp.get('mode') || 'native').toLowerCase();
+      var delay  = parseInt(qp.get('delay') || '5000', 10);
+      var overs  = Math.max(0.96, Math.min(1.0, parseFloat(qp.get('overscan') || '0.99')));
 
-      // Slight underscan to avoid the TV clipping edges (adjust 0.98–1.0 as needed)
-      var OVERSCAN = 1.01;
+      // Your published-embed URL base (unchanged)
+      var base = 'https://docs.google.com/presentation/d/e/2PACX-1vTcvwa1irS_Vah7LsHWKBwzs4oiJImAAuqIa2ZOX7STMw-Ktd7vF--YyTVvxdcsyPpvqY697Pm_CYMA/pubembed';
+      var src  = base + '?start=true&loop=true&rm=minimal&delayms=' + (isFinite(delay) ? delay : 5000);
 
-      function fit(){
-        var sw = window.innerWidth;
-        var sh = window.innerHeight;
-        var scale = Math.min(sw / 1920, sh / 1080) * OVERSCAN;
-        // Round to 3 decimals to reduce re-rasterization jitter
-        scale = Math.max(0.1, Math.min(4, Math.round(scale * 1000) / 1000));
-        stage.style.transform = 'scale(' + scale + ')';
-        // Center the stage
-        var pxW = 1920 * scale;
-        var pxH = 1080 * scale;
-        stage.style.left = Math.round((sw - pxW) / 2) + 'px';
-        stage.style.top  = Math.round((sh - pxH) / 2) + 'px';
+      // Native mode (recommended): no scaling, let Slides handle its own layout
+      var nativeWrap = document.getElementById('nativeWrap');
+      var fitWrap    = document.getElementById('fitWrap');
+      var deckNative = document.getElementById('deckNative');
+      var deckFit    = document.getElementById('deckFit');
+
+      if (mode === 'fit1080') {
+        nativeWrap.style.display = 'none';
+        fitWrap.style.display = 'block';
+        deckFit.src = src;
+        fit1080();
+        addEventListener('resize', fit1080);
+        addEventListener('orientationchange', fit1080);
+      } else {
+        fitWrap.style.display = 'none';
+        nativeWrap.style.display = 'block';
+        deckNative.src = src;
       }
 
-      window.addEventListener('resize', fit);
-      window.addEventListener('orientationchange', fit);
-      document.addEventListener('DOMContentLoaded', fit);
-      fit();
+      function fit1080(){
+        var stage = document.getElementById('stage');
+        var sw = innerWidth, sh = innerHeight;
+        var s = Math.min(sw/1920, sh/1080) * overs;
+        s = Math.max(0.1, Math.min(4, Math.round(s*1000)/1000));
+        stage.style.transform = 'translate(' + Math.round((sw - 1920*s)/2) + 'px,' + Math.round((sh - 1080*s)/2) + 'px) scale(' + s + ')';
+      }
 
-      // Daily refresh at 08:05 (post power-on)
+      // Daily refresh at 08:05 (post power-on), no extra intervals
+      schedule(8, 5);
       function schedule(h, m){
-        var now = new Date();
-        var next = new Date(now);
-        next.setHours(h, m, 0, 0);
-        if (next <= now) next.setDate(next.getDate() + 1);
+        var now = new Date(), next = new Date(now);
+        next.setHours(h, m, 0, 0); if (next <= now) next.setDate(next.getDate()+1);
         setTimeout(function(){ location.reload(); }, next - now);
       }
-      schedule(8, 5);
 
-      // Keep cursor hidden redundantly (if TV allows)
-      function hide(){
-        document.documentElement.style.cursor = 'none';
-        document.body.style.cursor = 'none';
-      }
-      ['mousemove','mousedown','keydown','touchstart','pointermove'].forEach(function(evt){
-        window.addEventListener(evt, hide, { passive: true });
-      });
+      // Redundant cursor hide (if the browser allows it)
+      function hide(){ document.documentElement.style.cursor='none'; document.body.style.cursor='none'; }
+      ['mousemove','mousedown','keydown','touchstart','pointermove'].forEach(function(evt){ addEventListener(evt, hide, { passive:true }); });
 
-      // Prevent accidental context menu
-      window.addEventListener('contextmenu', function(e){ e.preventDefault(); }, { passive: false });
+      // Prevent context menu
+      addEventListener('contextmenu', function(e){ e.preventDefault(); }, { passive:false });
 
       // Quiet console
       console.log = console.warn = console.error = function(){};
