@@ -9,15 +9,16 @@
   <meta http-equiv="Expires" content="0" />
   <title>Samsung TV Signage – Google Slides</title>
   <style>
+    :root, html, body, iframe, #lockLayer, * { cursor: none !important; }
     html, body {
       height: 100%;
       margin: 0;
       background: #000;
       overflow: hidden;            /* no scrollbars */
-      cursor: none;                /* always hide cursor */
       -webkit-user-select: none;   
       -moz-user-select: none;
       user-select: none;
+      -webkit-touch-callout: none;
       touch-action: manipulation;  /* reduce touch delays */
     }
     iframe#deck {
@@ -26,18 +27,28 @@
       width: 100vw;
       height: 100vh;
       border: 0;
-      cursor: none;                /* hide over iframe area too */
       background: #000;
+    }
+    /* Hidden, interaction-capturing layer used to trigger Pointer Lock once */
+    #lockLayer {
+      position: fixed;
+      inset: 0;
+      z-index: 2;
+      background: transparent;
+      pointer-events: auto;        /* only until we arm once */
     }
     /* Hide scrollbars in WebKit/Blink */
     ::-webkit-scrollbar { display: none; }
   </style>
 </head>
 <body>
+  <!-- Invisible layer to try to acquire Pointer Lock on first interaction -->
+  <div id="lockLayer" tabindex="-1" aria-hidden="true"></div>
+
   <iframe
     id="deck"
     src="https://docs.google.com/presentation/d/e/2PACX-1vTcvwa1irS_Vah7LsHWKBwzs4oiJImAAuqIa2ZOX7STMw-Ktd7vF--YyTVvxdcsyPpvqY697Pm_CYMA/pubembed?start=true&loop=true&delayms=5000&rm=minimal"
-    allow="autoplay; fullscreen"
+    allow="autoplay; fullscreen; pointer-lock"
     allowfullscreen
     mozallowfullscreen
     webkitallowfullscreen
@@ -45,53 +56,103 @@
   ></iframe>
 
   <script>
-    // Samsung TV–friendly digital signage (no overlays/prompts)
-    // Assumptions: TV powers OFF at 00:00 and ON at 08:00 daily.
+    // Samsung TV–friendly signage with aggressive cursor-hiding attempts
 
     const CONFIG = {
-      // Reload shortly after morning power-on to ensure a fresh session
+      // Power schedule assumptions: TV OFF 00:00, ON 08:00
       morningReload: { hour: 8, minute: 5 },
-      // Optional mid‑day reloads to keep memory fresh (set to null to disable)
       middayReload:   { hour: 14, minute: 0 },
       eveningReload:  { hour: 20, minute: 0 },
-      // One-time warm-up reload after boot (ms). Helps if the first load races the network.
       bootWarmupReloadMs: 45000,
-      // Lightweight connectivity probe; success implies network is up
       pingUrl: 'https://www.gstatic.com/generate_204',
-      pingIntervalMs: 60000,            // check every 60s
-      offlineReloadDelayMs: 15000,      // wait 15s then retry when offline
-      useWakeLock: false                // TVs manage their own power; no wake lock
+      pingIntervalMs: 60000,
+      offlineReloadDelayMs: 15000
     };
 
     const deck = document.getElementById('deck');
+    const lockLayer = document.getElementById('lockLayer');
 
-    // Keep cursor hidden even after interactions (some remotes emulate a mouse)
-    const rehideCursor = () => {
+    // Force-hide cursor styles, redundantly
+    function forceHideCursor(){
       document.documentElement.style.cursor = 'none';
       document.body.style.cursor = 'none';
-    };
-    ['mousemove','mousedown','keydown','touchstart'].forEach(evt =>
-      window.addEventListener(evt, rehideCursor, { passive: true })
+    }
+    forceHideCursor();
+    ['mousemove','mousedown','keydown','touchstart','pointermove'].forEach(evt =>
+      window.addEventListener(evt, forceHideCursor, { passive: true })
     );
 
-    // Block context menu & accidental navigation keys
+    // Try Pointer Lock (often hides OS cursor). Requires a user gesture in most browsers.
+    function plSupported(){
+      return !!(document.body.requestPointerLock || document.body.mozRequestPointerLock || document.body.webkitRequestPointerLock);
+    }
+    function requestPointerLock(){
+      const r = lockLayer.requestPointerLock || lockLayer.mozRequestPointerLock || lockLayer.webkitRequestPointerLock;
+      try { r && r.call(lockLayer); } catch(_){}
+    }
+    function onPLChange(){
+      const locked = document.pointerLockElement === lockLayer || document.mozPointerLockElement === lockLayer || document.webkitPointerLockElement === lockLayer;
+      // Once locked, stop intercepting input so the deck gets keys/clicks
+      lockLayer.style.pointerEvents = locked ? 'none' : 'auto';
+      if (!locked) {
+        // Re-arm periodic attempts in case lock drops
+        armPLRetries();
+      }
+    }
+    document.addEventListener('pointerlockchange', onPLChange);
+    document.addEventListener('mozpointerlockchange', onPLChange);
+    document.addEventListener('webkitpointerlockchange', onPLChange);
+
+    // Arm once on first user gesture; then keep retrying quietly in the background
+    let plRetrier = null;
+    function armPLRetries(){
+      if (!plSupported()) return;
+      if (plRetrier) clearInterval(plRetrier);
+      // rapid retries for a short burst, then slow down
+      const bursts = [250, 500, 1000, 2000, 4000, 8000];
+      let idx = 0;
+      function burst(){ requestPointerLock(); if (++idx < bursts.length) setTimeout(burst, bursts[idx]); }
+      burst();
+      plRetrier = setInterval(requestPointerLock, 30000); // keep nudging every 30s
+    }
+
+    function firstGesture(){
+      requestPointerLock();
+      armPLRetries();
+      // stop capturing input regardless (don’t block the deck)
+      lockLayer.style.pointerEvents = 'none';
+      window.removeEventListener('keydown', firstGesture, true);
+      window.removeEventListener('mousedown', firstGesture, true);
+      window.removeEventListener('pointerdown', firstGesture, true);
+      window.removeEventListener('touchstart', firstGesture, true);
+    }
+    window.addEventListener('keydown', firstGesture, true);
+    window.addEventListener('mousedown', firstGesture, true);
+    window.addEventListener('pointerdown', firstGesture, true);
+    window.addEventListener('touchstart', firstGesture, true);
+
+    // As an extra belt-and-suspenders: try a transparent 1×1 cursor URL (some engines honor this even if 'none' is ignored)
+    try {
+      const transparentCursor = 'url(data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==) 0 0, none';
+      document.documentElement.style.cursor = transparentCursor;
+      document.body.style.cursor = transparentCursor;
+    } catch(_){}
+
+    // Block context menu & common navigation keys
     window.addEventListener('contextmenu', e => e.preventDefault());
     document.addEventListener('keydown', (e) => {
-      const blocked = [8, 33, 34, 35, 36, 37, 38, 39, 40]; // backspace, pgup/down, home/end, arrows
+      const blocked = [33,34,35,36,37,38,39,40]; // pgup/down, home/end, arrows
       if (blocked.includes(e.keyCode)) e.preventDefault();
-      // Tizen back key (often 10009) – prevent navigating away
-      if (e.keyCode === 10009) e.preventDefault();
+      if (e.keyCode === 10009 || e.key === 'Back') e.preventDefault(); // Tizen back
     });
 
-    // --- Reload helpers ---
+    // Reload helpers
     function reloadDeck() {
       try {
         const u = new URL(deck.src);
         u.searchParams.set('_ts', Date.now().toString());
         deck.src = u.toString();
-      } catch {
-        deck.src = deck.src; // fallback hard reload
-      }
+      } catch { deck.src = deck.src; }
     }
 
     function scheduleReloadAt(hour, minute) {
@@ -102,41 +163,25 @@
       if (next <= now) next.setDate(next.getDate() + 1);
       setTimeout(() => { reloadDeck(); scheduleReloadAt(hour, minute); }, next - now);
     }
-
-    // Schedule reloader windows based on the TV's on-hours (08:00–24:00)
     scheduleReloadAt(CONFIG.morningReload?.hour, CONFIG.morningReload?.minute);
     scheduleReloadAt(CONFIG.middayReload?.hour,   CONFIG.middayReload?.minute);
     scheduleReloadAt(CONFIG.eveningReload?.hour,  CONFIG.eveningReload?.minute);
 
-    // Warm-up reload to stabilize after cold boot
-    if (CONFIG.bootWarmupReloadMs) {
-      setTimeout(reloadDeck, CONFIG.bootWarmupReloadMs);
-    }
+    if (CONFIG.bootWarmupReloadMs) setTimeout(reloadDeck, CONFIG.bootWarmupReloadMs);
 
-    // --- Connectivity watchdog (quiet) ---
+    // Connectivity watchdog (quiet)
     async function pingOnce() {
       if (!navigator.onLine) return false;
-      try {
-        // no-cors yields an opaque response; success means we reached the server
-        await fetch(CONFIG.pingUrl, { mode: 'no-cors', cache: 'no-store' });
-        return true;
-      } catch (_) { return false; }
+      try { await fetch(CONFIG.pingUrl, { mode: 'no-cors', cache: 'no-store' }); return true; } catch(_) { return false; }
     }
-
     async function connectivityLoop() {
       const ok = await pingOnce();
-      if (!ok) {
-        // If offline, try again later; when it comes back, force a refresh
-        setTimeout(async () => {
-          const back = await pingOnce();
-          if (back) reloadDeck();
-        }, CONFIG.offlineReloadDelayMs);
-      }
+      if (!ok) setTimeout(async () => { if (await pingOnce()) reloadDeck(); }, CONFIG.offlineReloadDelayMs);
       setTimeout(connectivityLoop, CONFIG.pingIntervalMs);
     }
     connectivityLoop();
 
-    // Quiet console (avoid debug overlays on some TVs)
+    // Quiet console to avoid overlays on some TVs
     console.log = console.warn = console.error = function(){};
   </script>
 </body>
