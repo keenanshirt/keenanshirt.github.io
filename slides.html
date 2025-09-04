@@ -7,18 +7,18 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
-  <title>Digital Signage – Google Slides</title>
+  <title>Samsung TV Signage – Google Slides</title>
   <style>
     html, body {
       height: 100%;
       margin: 0;
       background: #000;
-      overflow: hidden;
-      cursor: none;                 /* always hide cursor */
-      -webkit-user-select: none;    
+      overflow: hidden;            /* no scrollbars */
+      cursor: none;                /* always hide cursor */
+      -webkit-user-select: none;   
       -moz-user-select: none;
       user-select: none;
-      touch-action: manipulation;   /* reduce touch delays */
+      touch-action: manipulation;  /* reduce touch delays */
     }
     iframe#deck {
       position: fixed;
@@ -26,10 +26,10 @@
       width: 100vw;
       height: 100vh;
       border: 0;
-      cursor: none;                 /* hide over iframe area too */
+      cursor: none;                /* hide over iframe area too */
       background: #000;
     }
-    /* Hide scrollbars just in case */
+    /* Hide scrollbars in WebKit/Blink */
     ::-webkit-scrollbar { display: none; }
   </style>
 </head>
@@ -45,18 +45,27 @@
   ></iframe>
 
   <script>
-    // ====== Headless/Kiosk signage (no overlays/prompts) ======
+    // Samsung TV–friendly digital signage (no overlays/prompts)
+    // Assumptions: TV powers OFF at 00:00 and ON at 08:00 daily.
+
     const CONFIG = {
-      dailyReloadHour: 2,               // local hour (24h) for daily reload; null to disable
-      hardReloadIntervalHours: 6,       // safety reload every N hours; null to disable
-      useWakeLock: true,                // keep the screen awake if supported
-      hiddenReloadThresholdMins: 120,   // if tab hidden > N minutes, reload on return
-      silentOfflineRetryMs: 15000       // retry reload when offline without showing UI
+      // Reload shortly after morning power-on to ensure a fresh session
+      morningReload: { hour: 8, minute: 5 },
+      // Optional mid‑day reloads to keep memory fresh (set to null to disable)
+      middayReload:   { hour: 14, minute: 0 },
+      eveningReload:  { hour: 20, minute: 0 },
+      // One-time warm-up reload after boot (ms). Helps if the first load races the network.
+      bootWarmupReloadMs: 45000,
+      // Lightweight connectivity probe; success implies network is up
+      pingUrl: 'https://www.gstatic.com/generate_204',
+      pingIntervalMs: 60000,            // check every 60s
+      offlineReloadDelayMs: 15000,      // wait 15s then retry when offline
+      useWakeLock: false                // TVs manage their own power; no wake lock
     };
 
     const deck = document.getElementById('deck');
 
-    // Keep cursor hidden even after interactions
+    // Keep cursor hidden even after interactions (some remotes emulate a mouse)
     const rehideCursor = () => {
       document.documentElement.style.cursor = 'none';
       document.body.style.cursor = 'none';
@@ -65,39 +74,13 @@
       window.addEventListener(evt, rehideCursor, { passive: true })
     );
 
-    // Block context menu and accidental UI
+    // Block context menu & accidental navigation keys
     window.addEventListener('contextmenu', e => e.preventDefault());
-
-    // --- Fullscreen (silently attempt; may be ignored without a prior user gesture) ---
-    async function enterFullscreen() {
-      try {
-        if (!document.fullscreenElement) {
-          await document.documentElement.requestFullscreen({ navigationUI: 'hide' });
-        }
-      } catch (_) { /* ignore if not allowed */ }
-    }
-    function tryFullscreen() {
-      enterFullscreen();
-      // Re-try after short delays; some kiosk shells allow after load.
-      setTimeout(enterFullscreen, 1000);
-      document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'visible') enterFullscreen();
-      });
-    }
-    tryFullscreen();
-
-    // --- Wake Lock (prevent display sleep) ---
-    let wakeLock = null;
-    async function requestWakeLock() {
-      if (!CONFIG.useWakeLock || !('wakeLock' in navigator)) return;
-      try {
-        wakeLock = await navigator.wakeLock.request('screen');
-        wakeLock.addEventListener('release', () => { /* silently ignore; we'll re-request on visibility */ });
-      } catch (_) { /* ignore */ }
-    }
-    requestWakeLock();
-    document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible') requestWakeLock();
+    document.addEventListener('keydown', (e) => {
+      const blocked = [8, 33, 34, 35, 36, 37, 38, 39, 40]; // backspace, pgup/down, home/end, arrows
+      if (blocked.includes(e.keyCode)) e.preventDefault();
+      // Tizen back key (often 10009) – prevent navigating away
+      if (e.keyCode === 10009) e.preventDefault();
     });
 
     // --- Reload helpers ---
@@ -111,46 +94,49 @@
       }
     }
 
-    // Daily scheduled reload
-    function scheduleDailyReload() {
-      if (CONFIG.dailyReloadHour == null) return;
+    function scheduleReloadAt(hour, minute) {
+      if (hour == null || minute == null) return;
       const now = new Date();
       const next = new Date(now);
-      next.setHours(CONFIG.dailyReloadHour, 0, 0, 0);
+      next.setHours(hour, minute, 0, 0);
       if (next <= now) next.setDate(next.getDate() + 1);
-      setTimeout(() => { reloadDeck(); scheduleDailyReload(); }, next - now);
-    }
-    scheduleDailyReload();
-
-    // Hard interval reload
-    if (CONFIG.hardReloadIntervalHours != null) {
-      setInterval(reloadDeck, CONFIG.hardReloadIntervalHours * 3600_000);
+      setTimeout(() => { reloadDeck(); scheduleReloadAt(hour, minute); }, next - now);
     }
 
-    // Hidden tab recovery
-    let hiddenSince = null;
-    document.addEventListener('visibilitychange', () => {
-      if (document.hidden) {
-        hiddenSince = Date.now();
-      } else if (hiddenSince) {
-        const mins = (Date.now() - hiddenSince) / 60000;
-        hiddenSince = null;
-        if (mins > (CONFIG.hiddenReloadThresholdMins || Infinity)) reloadDeck();
+    // Schedule reloader windows based on the TV's on-hours (08:00–24:00)
+    scheduleReloadAt(CONFIG.morningReload?.hour, CONFIG.morningReload?.minute);
+    scheduleReloadAt(CONFIG.middayReload?.hour,   CONFIG.middayReload?.minute);
+    scheduleReloadAt(CONFIG.eveningReload?.hour,  CONFIG.eveningReload?.minute);
+
+    // Warm-up reload to stabilize after cold boot
+    if (CONFIG.bootWarmupReloadMs) {
+      setTimeout(reloadDeck, CONFIG.bootWarmupReloadMs);
+    }
+
+    // --- Connectivity watchdog (quiet) ---
+    async function pingOnce() {
+      if (!navigator.onLine) return false;
+      try {
+        // no-cors yields an opaque response; success means we reached the server
+        await fetch(CONFIG.pingUrl, { mode: 'no-cors', cache: 'no-store' });
+        return true;
+      } catch (_) { return false; }
+    }
+
+    async function connectivityLoop() {
+      const ok = await pingOnce();
+      if (!ok) {
+        // If offline, try again later; when it comes back, force a refresh
+        setTimeout(async () => {
+          const back = await pingOnce();
+          if (back) reloadDeck();
+        }, CONFIG.offlineReloadDelayMs);
       }
-    });
-
-    // Silent offline watcher: no UI, just retry & reload when back
-    function offlineWatcher(){
-      if (!navigator.onLine) {
-        setTimeout(() => {
-          if (navigator.onLine) reloadDeck(); else offlineWatcher();
-        }, CONFIG.silentOfflineRetryMs);
-      }
+      setTimeout(connectivityLoop, CONFIG.pingIntervalMs);
     }
-    window.addEventListener('offline', offlineWatcher);
-    window.addEventListener('online', () => reloadDeck());
+    connectivityLoop();
 
-    // Quiet mode
+    // Quiet console (avoid debug overlays on some TVs)
     console.log = console.warn = console.error = function(){};
   </script>
 </body>
