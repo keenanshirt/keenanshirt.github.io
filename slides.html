@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <title>Digital Signage – Google Slides</title>
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      background: #000;
+      overflow: hidden;
+      cursor: none;                 /* always hide cursor */
+      -webkit-user-select: none;    
+      -moz-user-select: none;
+      user-select: none;
+      touch-action: manipulation;   /* reduce touch delays */
+    }
+    iframe#deck {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      border: 0;
+      cursor: none;                 /* hide over iframe area too */
+      background: #000;
+    }
+    /* Hide scrollbars just in case */
+    ::-webkit-scrollbar { display: none; }
+  </style>
+</head>
+<body>
+  <iframe
+    id="deck"
+    src="https://docs.google.com/presentation/d/e/2PACX-1vTcvwa1irS_Vah7LsHWKBwzs4oiJImAAuqIa2ZOX7STMw-Ktd7vF--YyTVvxdcsyPpvqY697Pm_CYMA/pubembed?start=true&loop=true&delayms=5000&rm=minimal"
+    allow="autoplay; fullscreen"
+    allowfullscreen
+    mozallowfullscreen
+    webkitallowfullscreen
+    referrerpolicy="no-referrer"
+  ></iframe>
+
+  <script>
+    // ====== Headless/Kiosk signage (no overlays/prompts) ======
+    const CONFIG = {
+      dailyReloadHour: 2,               // local hour (24h) for daily reload; null to disable
+      hardReloadIntervalHours: 6,       // safety reload every N hours; null to disable
+      useWakeLock: true,                // keep the screen awake if supported
+      hiddenReloadThresholdMins: 120,   // if tab hidden > N minutes, reload on return
+      silentOfflineRetryMs: 15000       // retry reload when offline without showing UI
+    };
+
+    const deck = document.getElementById('deck');
+
+    // Keep cursor hidden even after interactions
+    const rehideCursor = () => {
+      document.documentElement.style.cursor = 'none';
+      document.body.style.cursor = 'none';
+    };
+    ['mousemove','mousedown','keydown','touchstart'].forEach(evt =>
+      window.addEventListener(evt, rehideCursor, { passive: true })
+    );
+
+    // Block context menu and accidental UI
+    window.addEventListener('contextmenu', e => e.preventDefault());
+
+    // --- Fullscreen (silently attempt; may be ignored without a prior user gesture) ---
+    async function enterFullscreen() {
+      try {
+        if (!document.fullscreenElement) {
+          await document.documentElement.requestFullscreen({ navigationUI: 'hide' });
+        }
+      } catch (_) { /* ignore if not allowed */ }
+    }
+    function tryFullscreen() {
+      enterFullscreen();
+      // Re-try after short delays; some kiosk shells allow after load.
+      setTimeout(enterFullscreen, 1000);
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') enterFullscreen();
+      });
+    }
+    tryFullscreen();
+
+    // --- Wake Lock (prevent display sleep) ---
+    let wakeLock = null;
+    async function requestWakeLock() {
+      if (!CONFIG.useWakeLock || !('wakeLock' in navigator)) return;
+      try {
+        wakeLock = await navigator.wakeLock.request('screen');
+        wakeLock.addEventListener('release', () => { /* silently ignore; we'll re-request on visibility */ });
+      } catch (_) { /* ignore */ }
+    }
+    requestWakeLock();
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') requestWakeLock();
+    });
+
+    // --- Reload helpers ---
+    function reloadDeck() {
+      try {
+        const u = new URL(deck.src);
+        u.searchParams.set('_ts', Date.now().toString());
+        deck.src = u.toString();
+      } catch {
+        deck.src = deck.src; // fallback hard reload
+      }
+    }
+
+    // Daily scheduled reload
+    function scheduleDailyReload() {
+      if (CONFIG.dailyReloadHour == null) return;
+      const now = new Date();
+      const next = new Date(now);
+      next.setHours(CONFIG.dailyReloadHour, 0, 0, 0);
+      if (next <= now) next.setDate(next.getDate() + 1);
+      setTimeout(() => { reloadDeck(); scheduleDailyReload(); }, next - now);
+    }
+    scheduleDailyReload();
+
+    // Hard interval reload
+    if (CONFIG.hardReloadIntervalHours != null) {
+      setInterval(reloadDeck, CONFIG.hardReloadIntervalHours * 3600_000);
+    }
+
+    // Hidden tab recovery
+    let hiddenSince = null;
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        hiddenSince = Date.now();
+      } else if (hiddenSince) {
+        const mins = (Date.now() - hiddenSince) / 60000;
+        hiddenSince = null;
+        if (mins > (CONFIG.hiddenReloadThresholdMins || Infinity)) reloadDeck();
+      }
+    });
+
+    // Silent offline watcher: no UI, just retry & reload when back
+    function offlineWatcher(){
+      if (!navigator.onLine) {
+        setTimeout(() => {
+          if (navigator.onLine) reloadDeck(); else offlineWatcher();
+        }, CONFIG.silentOfflineRetryMs);
+      }
+    }
+    window.addEventListener('offline', offlineWatcher);
+    window.addEventListener('online', () => reloadDeck());
+
+    // Quiet mode
+    console.log = console.warn = console.error = function(){};
+  </script>
+</body>
+</html>
