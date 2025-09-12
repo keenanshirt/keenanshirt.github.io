@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate, max-age=0" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <link rel="preconnect" href="https://docs.google.com" />
+  <title>Samsung TV Signage — Slides Embed (Change Detection)</title>
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      background: #000;
+      overflow: hidden;              /* no scrollbars */
+      cursor: none;                  /* hide cursor if allowed */
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      user-select: none;
+      -webkit-touch-callout: none;
+      touch-action: manipulation;
+    }
+    /* Native full-viewport iframe (no transforms) */
+    #nativeWrap, #fitWrap { position: fixed; inset: 0; }
+    #nativeWrap iframe, #fitWrap iframe { width: 100vw; height: 100vh; border: 0; background: #000; display: block; }
+
+    /* 1080p-fit stage (optional mode) */
+    #fitWrap { display: none; }
+    #stage { position: absolute; width: 1920px; height: 1080px; left: 0; top: 0; transform-origin: top left; }
+    #stage iframe { width: 1920px; height: 1080px; border: 0; display: block; background: #000; }
+
+    ::-webkit-scrollbar { display: none; }
+  </style>
+</head>
+<body>
+  <!-- Mode A: Native full-viewport (default, smoothest on Tizen) -->
+  <div id="nativeWrap"><iframe id="deckNative" loading="eager" importance="high"></iframe></div>
+
+  <!-- Mode B: 1080p-fit (use only if native crops/letterboxes unexpectedly) -->
+  <div id="fitWrap"><div id="stage"><iframe id="deckFit" loading="eager" importance="high"></iframe></div></div>
+
+  <script>
+    // ========================
+    // CONFIGURE THESE TWO LINES
+    // ========================
+    const PROBE_URL = 'https://script.google.com/macros/s/AKfycbwYHl1m-ocPQHuovO81-k1kr5lGd_LvLTm9A6pdMqKsip4ncX0gMG1Hgizrbi_5KwoB/exec';
+    const POLL_MS   = 300000; // how often to check (ms). e.g., 300000 = 5 minutes
+    // ========================
+
+    (function(){
+      var qp     = new URLSearchParams(location.search);
+      var mode   = (qp.get('mode') || 'native').toLowerCase(); // 'native' | 'fit1080'
+      var delay  = parseInt(qp.get('delay') || '5000', 10);    // slide advance delay (ms)
+      var overs  = Math.max(0.96, Math.min(1.0, parseFloat(qp.get('overscan') || '0.99')));
+
+      // Google Slides published embed URL (unchanged)
+      var base = 'https://docs.google.com/presentation/d/e/2PACX-1vTcvwa1irS_Vah7LsHWKBwzs4oiJImAAuqIa2ZOX7STMw-Ktd7vF--YyTVvxdcsyPpvqY697Pm_CYMA/pubembed';
+      var src  = base + '?start=true&loop=true&rm=minimal&delayms=' + (isFinite(delay) ? delay : 5000);
+
+      var nativeWrap = document.getElementById('nativeWrap');
+      var fitWrap    = document.getElementById('fitWrap');
+      var deckNative = document.getElementById('deckNative');
+      var deckFit    = document.getElementById('deckFit');
+
+      if (mode === 'fit1080') {
+        nativeWrap.style.display = 'none';
+        fitWrap.style.display = 'block';
+        deckFit.src = src;
+        fit1080();
+        addEventListener('resize', fit1080);
+        addEventListener('orientationchange', fit1080);
+      } else {
+        fitWrap.style.display = 'none';
+        nativeWrap.style.display = 'block';
+        deckNative.src = src;
+      }
+
+      function fit1080(){
+        var stage = document.getElementById('stage');
+        var sw = innerWidth, sh = innerHeight;
+        var s = Math.min(sw/1920, sh/1080) * overs;
+        s = Math.max(0.1, Math.min(4, Math.round(s*1000)/1000));
+        stage.style.transform = 'translate(' + Math.round((sw - 1920*s)/2) + 'px,' + Math.round((sh - 1080*s)/2) + 'px) scale(' + s + ')';
+      }
+
+      // Daily refresh at 08:05 (post power-on); independent of change detection.
+      schedule(8, 5);
+      function schedule(h, m){
+        var now = new Date(), next = new Date(now);
+        next.setHours(h, m, 0, 0); if (next <= now) next.setDate(next.getDate()+1);
+        setTimeout(function(){ location.reload(); }, next - now);
+      }
+
+      // ---- Option B ONLY: change-detection via Apps Script probe (uses ONLY modifiedTime) ----
+      if (PROBE_URL && isFinite(POLL_MS) && POLL_MS > 0) {
+        var lastModified = null;
+        var _target = null;
+
+        async function check() {
+          try {
+            var url = PROBE_URL + (PROBE_URL.includes('?') ? '&' : '?') + 't=' + Date.now(); // cache-bust
+            var r = await fetch(url, { cache: 'no-store' });
+            var j = await r.json();
+            var current = j.modifiedTime || null; // ONLY use modifiedTime
+
+            if (!current) return;           // if the endpoint didn't return it, do nothing
+            if (lastModified === null) {    // first successful read: establish baseline
+              lastModified = current;
+              return;
+            }
+            if (current !== lastModified) { // change detected -> reload iframe with cache-bust
+              _target = _target || document.getElementById(mode === 'fit1080' ? 'deckFit' : 'deckNative');
+              var u = new URL(_target.src);
+              u.searchParams.set('v', Date.now().toString(36));
+              _target.src = u.toString();
+              lastModified = current;
+            }
+          } catch (e) {
+            // Swallow errors for signage stability (offline, CORS, transient failures).
+          }
+        }
+
+        check();                  // initial snapshot
+        setInterval(check, POLL_MS);
+      }
+
+      // Redundant cursor hide (if allowed)
+      function hide(){ document.documentElement.style.cursor='none'; document.body.style.cursor='none'; }
+      ['mousemove','mousedown','keydown','touchstart','pointermove'].forEach(function(evt){ addEventListener(evt, hide, { passive:true }); });
+
+      // Prevent context menu
+      addEventListener('contextmenu', function(e){ e.preventDefault(); }, { passive:false });
+
+      // Quiet console (uncomment if debugging)
+      console.log = console.warn = console.error = function(){};
+    })();
+  </script>
+</body>
+</html>
