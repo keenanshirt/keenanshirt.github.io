@@ -46,13 +46,13 @@
     // CONFIGURE THESE TWO LINES
     // ========================
     const PROBE_URL = 'https://script.google.com/macros/s/AKfycbwYHl1m-ocPQHuovO81-k1kr5lGd_LvLTm9A6pdMqKsip4ncX0gMG1Hgizrbi_5KwoB/exec';
-    const POLL_MS   = 300000; // how often to check (ms). e.g., 300000 = 5 minutes
+    const POLL_MS   = 600000; // how often to check (ms). e.g., 300000 = 5 minutes
     // ========================
 
     (function(){
       var qp     = new URLSearchParams(location.search);
       var mode   = (qp.get('mode') || 'native').toLowerCase(); // 'native' | 'fit1080'
-      var delay  = parseInt(qp.get('delay') || '5000', 10);    // slide advance delay (ms)
+      var delay  = parseInt(qp.get('delay') || '7000', 10);    // slide advance delay (ms)
       var overs  = Math.max(0.96, Math.min(1.0, parseFloat(qp.get('overscan') || '0.99')));
 
       // Google Slides published embed URL (unchanged)
