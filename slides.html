@@ -13,7 +13,7 @@
     html, body {
       height: 100%;
       margin: 0;
-      background: #000;
+      background: #000;              /* page background black */
       overflow: hidden;              /* no scrollbars */
       cursor: none;                  /* hide cursor if allowed */
       -webkit-user-select: none;
@@ -24,7 +24,10 @@
     }
     /* Native full-viewport iframe (no transforms) */
     #nativeWrap, #fitWrap { position: fixed; inset: 0; }
-    #nativeWrap iframe, #fitWrap iframe { width: 100vw; height: 100vh; border: 0; background: #000; display: block; }
+    #nativeWrap iframe, #fitWrap iframe {
+      width: 100vw; height: 100vh; border: 0;
+      background: #000; display: block; /* iframe background black */
+    }
 
     /* 1080p-fit stage (optional mode) */
     #fitWrap { display: none; }
@@ -46,18 +49,18 @@
     // CONFIGURE THESE TWO LINES
     // ========================
     const PROBE_URL = 'https://script.google.com/macros/s/AKfycbwYHl1m-ocPQHuovO81-k1kr5lGd_LvLTm9A6pdMqKsip4ncX0gMG1Hgizrbi_5KwoB/exec';
-    const POLL_MS   = 600000; // how often to check (ms). e.g., 300000 = 5 minutes
+    const POLL_MS   = 600000; // how often to check (ms). 600000 = 10 minutes
     // ========================
 
     (function(){
       var qp     = new URLSearchParams(location.search);
       var mode   = (qp.get('mode') || 'native').toLowerCase(); // 'native' | 'fit1080'
-      var delay  = parseInt(qp.get('delay') || '7000', 10);    // slide advance delay (ms)
+      var delay  = parseInt(qp.get('delay') || '7000', 10);    // DEFAULT 7000ms (7s) slide advance
       var overs  = Math.max(0.96, Math.min(1.0, parseFloat(qp.get('overscan') || '0.99')));
 
       // Google Slides published embed URL (unchanged)
       var base = 'https://docs.google.com/presentation/d/e/2PACX-1vTcvwa1irS_Vah7LsHWKBwzs4oiJImAAuqIa2ZOX7STMw-Ktd7vF--YyTVvxdcsyPpvqY697Pm_CYMA/pubembed';
-      var src  = base + '?start=true&loop=true&rm=minimal&delayms=' + (isFinite(delay) ? delay : 5000);
+      var src  = base + '?start=true&loop=true&rm=minimal&delayms=' + (isFinite(delay) ? delay : 7000);
 
       var nativeWrap = document.getElementById('nativeWrap');
       var fitWrap    = document.getElementById('fitWrap');
@@ -93,7 +96,7 @@
         setTimeout(function(){ location.reload(); }, next - now);
       }
 
-      // ---- Option B ONLY: change-detection via Apps Script probe (uses ONLY modifiedTime) ----
+      // ---- Change-detection via Apps Script probe (uses ONLY modifiedTime) ----
       if (PROBE_URL && isFinite(POLL_MS) && POLL_MS > 0) {
         var lastModified = null;
         var _target = null;
@@ -105,7 +108,7 @@
             var j = await r.json();
             var current = j.modifiedTime || null; // ONLY use modifiedTime
 
-            if (!current) return;           // if the endpoint didn't return it, do nothing
+            if (!current) return;           // endpoint must return modifiedTime
             if (lastModified === null) {    // first successful read: establish baseline
               lastModified = current;
               return;
