@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  
+  <title>Samsung TV Signage — Robust Loader</title>
+  
+  <style>
+    html, body {
+      height: 100%; margin: 0; background: #000;
+      overflow: hidden; cursor: none;
+      -webkit-user-select: none; user-select: none;
+    }
+
+    /* Container for the Double Buffer System */
+    #stage-container {
+      position: absolute; inset: 0; width: 100vw; height: 100vh;
+      background: #000;
+    }
+
+    /* Common Iframe Styles */
+    .slide-frame {
+      position: absolute; top: 0; left: 0;
+      width: 100%; height: 100%;
+      border: 0; display: block; background: #000;
+      opacity: 0; transition: opacity 1.5s ease-in-out; /* Smooth crossfade */
+      z-index: 1;
+    }
+
+    /* The active class makes the iframe visible */
+    .slide-frame.active { opacity: 1; z-index: 2; }
+
+    /* For Fit-1080 Mode Scaling */
+    .fit-wrapper {
+      position: absolute; top: 0; left: 0;
+      width: 1920px; height: 1080px;
+      transform-origin: top left;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="stage-container">
+    </div>
+
+  <script>
+    // ========================
+    // CONFIGURATION
+    // ========================
+    const PROBE_URL = 'https://script.google.com/macros/s/AKfycbwYHl1m-ocPQHuovO81-k1kr5lGd_LvLTm9A6pdMqKsip4ncX0gMG1Hgizrbi_5KwoB/exec';
+    // Base URL (without query params)
+    const BASE_URL  = 'https://docs.google.com/presentation/d/e/2PACX-1vTcvwa1irS_Vah7LsHWKBwzs4oiJImAAuqIa2ZOX7STMw-Ktd7vF--YyTVvxdcsyPpvqY697Pm_CYMA/pubembed';
+    const POLL_MS   = 600000; // 10 minutes
+    // ========================
+
+    (function(){
+      // -- URL Parameters --
+      const qp    = new URLSearchParams(location.search);
+      const mode  = (qp.get('mode') || 'native').toLowerCase(); 
+      // Defaulting to 10s (10000ms) to give Tizen more time to render heavy slides
+      const delay = parseInt(qp.get('delay') || '10000', 10); 
+      const overs = Math.max(0.96, Math.min(1.0, parseFloat(qp.get('overscan') || '0.99')));
+      
+      const container = document.getElementById('stage-container');
+      let currentFrame = null;
+      let lastModified = null;
+
+      // -- 1. Build the Source URL --
+      function getSourceUrl() {
+        // We attach a timestamp 'v' to force the internal Google player to reload
+        const ts = Date.now().toString(36); 
+        return `${BASE_URL}?start=true&loop=true&rm=minimal&delayms=${delay}&v=${ts}`;
+      }
+
+      // -- 2. The Robust Loader (Double Buffer) --
+      function loadDeck(isInitial = false) {
+        if (!navigator.onLine) {
+          console.warn("Offline: Skipping reload to prevent white screen.");
+          return;
+        }
+
+        // Create new iframe
+        const newFrame = document.createElement('iframe');
+        newFrame.className = 'slide-frame';
+        newFrame.setAttribute('loading', 'eager');
+        newFrame.setAttribute('allow', 'autoplay; fullscreen'); // Crucial for video slides
+        
+        // Handle scaling for 'fit1080' mode
+        if (mode === 'fit1080') {
+            // We wrap the iframe in a div that we scale via CSS
+            const wrapper = document.createElement('div');
+            wrapper.className = 'fit-wrapper slide-frame'; // Wrapper acts as the fader
+            newFrame.className = ''; // Reset iframe class inside wrapper
+            newFrame.style.width = '1920px';
+            newFrame.style.height = '1080px';
+            wrapper.appendChild(newFrame);
+            
+            // Apply scale immediately
+            applyFit1080(wrapper);
+            
+            // Re-apply scale on resize (only for the active one usually, but good for safety)
+            window.addEventListener('resize', () => applyFit1080(wrapper));
+            
+            // The element we append to DOM is the wrapper
+            var elementToAppend = wrapper;
+            // The element we set src on is the iframe
+            var sourceTarget = newFrame;
+        } else {
+            // Native mode
+            var elementToAppend = newFrame;
+            var sourceTarget = newFrame;
+        }
+
+        sourceTarget.src = getSourceUrl();
+        container.appendChild(elementToAppend);
+
+        // Safety Timeout: If Google takes too long, force show it or kill it.
+        // We use a generous 15s timeout because Tizen is slow.
+        const loadTimeout = setTimeout(() => {
+           console.warn("Load timeout - forcing swap");
+           performSwap(elementToAppend);
+        }, 15000);
+
+        sourceTarget.onload = function() {
+          clearTimeout(loadTimeout);
+          // Wait an extra 2 seconds after 'load' to ensure internal render logic has started
+          setTimeout(() => {
+            performSwap(elementToAppend);
+          }, 2000);
+        };
+      }
+
+      function performSwap(newEl) {
+        // Fade in new
+        newEl.classList.add('active');
+
+        // Remove old after fade completes
+        if (currentFrame && currentFrame !== newEl) {
+          const oldFrame = currentFrame;
+          setTimeout(() => {
+            try {
+              if(oldFrame.parentNode) oldFrame.parentNode.removeChild(oldFrame);
+            } catch(e) {} // ignore if already removed
+          }, 2000); // Wait for CSS transition (1.5s)
+        }
+        currentFrame = newEl;
+      }
+
+      function applyFit1080(el) {
+        if(!el) return;
+        const sw = window.innerWidth; 
+        const sh = window.innerHeight;
+        let s = Math.min(sw/1920, sh/1080) * overs;
+        s = Math.max(0.1, Math.min(4, Math.round(s*1000)/1000));
+        el.style.transform = `translate(${Math.round((sw - 1920*s)/2)}px, ${Math.round((sh - 1080*s)/2)}px) scale(${s})`;
+      }
+
+      // -- 3. Change Detection --
+      async function checkChanges() {
+        if (!PROBE_URL || !navigator.onLine) return;
+        
+        try {
+          const r = await fetch(`${PROBE_URL}?t=${Date.now()}`, { cache: 'no-store' });
+          const j = await r.json();
+          const current = j.modifiedTime;
+
+          if (!current) return;
+
+          // First run: just set baseline
+          if (lastModified === null) {
+            lastModified = current;
+            return;
+          }
+
+          // Change detected: trigger robust reload
+          if (current !== lastModified) {
+            console.log("Change detected. Reloading deck...");
+            lastModified = current;
+            loadDeck(); 
+          }
+        } catch (e) {
+          console.error("Probe failed", e);
+        }
+      }
+
+      // -- 4. Maintenance (Daily Refresh) --
+      // Even with robust code, Tizen browsers run out of memory. 
+      // A hard page reload daily is the only cure.
+      function scheduleDailyRefresh(h, m) {
+        const now = new Date();
+        const next = new Date(now);
+        next.setHours(h, m, 0, 0);
+        if (next <= now) next.setDate(next.getDate() + 1);
+        setTimeout(() => location.reload(true), next - now);
+      }
+
+      // -- INIT --
+      loadDeck(true); // Load initial
+      
+      if (PROBE_URL) setInterval(checkChanges, POLL_MS);
+      scheduleDailyRefresh(8, 5); // 08:05 AM
+
+      // Input blocking
+      const hide = () => { document.body.style.cursor='none'; };
+      ['mousemove','mousedown','keydown','touchstart'].forEach(e => addEventListener(e, hide, {passive:true}));
+      addEventListener('contextmenu', e => e.preventDefault());
+
+    })();
+  </script>
+</body>
+</html>
