@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Embedded Arts Calendar</title>
+    <style>
+        /* Reset and Layout matching your screenshot */
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: transparent;
+            overflow: hidden; /* Prevents scrollbars inside the iframe */
+        }
+
+        .hwp-container {
+            box-sizing: border-box;
+            display: block;
+            width: 1312px;
+            height: 446.586px;
+            max-width: 1440px;
+            margin: 0 auto;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        .hwp-embed__inner {
+            width: 100%;
+            height: 100%;
+        }
+
+        .flex-wrapper {
+            display: flex; 
+            flex-direction: row; 
+            flex-wrap: nowrap; /* Keeps side-by-side as per your intent */
+            gap: 20px;
+            height: 100%;
+        }
+
+        .column-left {
+            flex: 0 0 300px; /* Fixed width for the list widget */
+        }
+
+        .column-right {
+            flex: 1; /* Takes up remaining 1012px */
+        }
+
+        .localist-widget {
+            width: 100%;
+        }
+
+        #lclst_widget_footer img {
+            border: none;
+            vertical-align: middle;
+        }
+
+        /* Responsive tweak: if the container is forced smaller than 1312px */
+        @media (max-width: 1312px) {
+            .hwp-container {
+                width: 100%;
+                height: auto;
+            }
+            .flex-wrapper {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="hwp-container">
+  <div class="hwp-embed__inner">
+    <div class="flex-wrapper">
+
+      <div class="column-left">
+        <div id="localist-widget-64520818" class="localist-widget"></div>
+        <script defer type="text/javascript" src="https://calendar.college.harvard.edu/widget/view?schools=harvardcollege&amp;groups=ceramics_program%2Charvard_dance_center%2Coffice_for_the_arts&amp;days=365&amp;num=3&amp;container=localist-widget-64520818&amp;template=template-3"></script>
+        
+        <div id="lclst_widget_footer">
+            <a style="margin: 10px auto; display: block; width: 81px;" title="Widget powered by Localist" href="https://www.localist.com">
+                <img src="//d3e1o4bcbhmj8g.cloudfront.net/assets/platforms/default/about/widget_footer.png" alt="Localist" width="81" height="23">
+            </a>
+        </div>
+      </div>
+
+      <div class="column-right">
+        <div id="localist-widget-651281" class="localist-widget"></div>
+        <script defer type="text/javascript" src="https://calendar.college.harvard.edu/widget/view?schools=harvardcollege&amp;groups=office_for_the_arts%2Cceramics_program%2Charvard_dance_center&amp;days=365&amp;num=2&amp;tags=OFA&amp;show_view_all_cta=0&amp;container=localist-widget-651281&amp;template=custom-modern"></script>
+        
+        <div id="lclst_widget_footer">
+            <a style="margin: 10px auto; display: block; width: 81px;" title="Widget powered by Localist" href="https://www.localist.com">
+                <img src="//d3e1o4bcbhmj8g.cloudfront.net/assets/platforms/default/about/widget_footer.png" alt="Localist" width="81" height="23">
+            </a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
