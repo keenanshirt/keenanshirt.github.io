@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OFA LiveWhale widget frames</title>
+<meta name="robots" content="noindex, nofollow">
+<style>
+  :root { color-scheme: light dark; }
+  body {
+    font: 16px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+    max-width: 62rem;
+    margin: 0 auto;
+    padding: 2rem 1.25rem 5rem;
+  }
+  h1 { font-size: 1.6rem; margin-bottom: .25rem; }
+  .lede { color: #666; margin-top: 0; }
+  h2 { font-size: 1.05rem; margin: 2.25rem 0 .3rem; }
+  .meta { color: #666; font-size: .875rem; margin: 0 0 .6rem; }
+  .meta a { color: inherit; }
+  pre {
+    background: #f4f4f5;
+    border: 1px solid #e0e0e2;
+    border-radius: 6px;
+    padding: .75rem .9rem;
+    overflow-x: auto;
+    font-size: .8125rem;
+    line-height: 1.5;
+  }
+  code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  .warn {
+    background: #fff8e1;
+    border-left: 4px solid #d9a300;
+    padding: .6rem .9rem;
+    font-size: .9rem;
+    margin: .6rem 0;
+  }
+  table { border-collapse: collapse; font-size: .875rem; margin-top: .75rem; }
+  th, td { border: 1px solid #ddd; padding: .35rem .6rem; text-align: left; }
+  th { background: #f4f4f5; }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  @media (prefers-color-scheme: dark) {
+    body { background: #16161a; color: #e8e8ea; }
+    .lede, .meta { color: #a0a0a8; }
+    pre { background: #1f1f24; border-color: #333; }
+    th { background: #1f1f24; }
+    th, td { border-color: #3a3a42; }
+    .warn { background: #2a2410; border-left-color: #d9a300; }
+  }
+</style>
+</head>
+<body>
+
+<h1>OFA LiveWhale widget frames</h1>
+<p class="lede">
+  One page per LiveWhale calendar widget, each rendering a single widget with a
+  transparent background so it can be iframed into
+  <a href="https://ofa.fas.harvard.edu/">ofa.fas.harvard.edu</a>.
+  Not linked from anywhere and marked <code>noindex</code> &mdash; these pages
+  exist only to be framed.
+</p>
+
+<h2>home.html &mdash; widget 43</h2>
+<p class="meta">
+  ofa.fas.harvard.edu/ (homepage) &middot; Upcoming Events &middot;
+  <a href="home.html">open</a>
+</p>
+<pre><code>&lt;iframe
+  src="https://keenanshirt.github.io/ofa-widgets/home.html"
+  name="ofa-events-home" id="ofa-events-home"
+  title="Upcoming events at the Office for the Arts"
+  height="1750" width="100%"
+  sandbox='allow-popups allow-scripts' allowfullscreen&gt;&lt;/iframe&gt;</code></pre>
+
+<h2>ofa-calendar.html &mdash; widget 44</h2>
+<p class="meta">
+  ofa.fas.harvard.edu/ofa-calendar &middot;
+  <a href="ofa-calendar.html">open</a>
+</p>
+<pre><code>&lt;iframe
+  src="https://keenanshirt.github.io/ofa-widgets/ofa-calendar.html"
+  name="ofa-events-calendar" id="ofa-events-calendar"
+  title="Office for the Arts events calendar"
+  height="3400" width="100%"
+  sandbox='allow-popups allow-scripts' allowfullscreen&gt;&lt;/iframe&gt;</code></pre>
+
+<h2>ceramics-featured-events.html &mdash; widget 45</h2>
+<p class="meta">
+  ofa.fas.harvard.edu/ceramics &middot; Featured Events &middot;
+  <a href="ceramics-featured-events.html">open</a>
+</p>
+<pre><code>&lt;iframe
+  src="https://keenanshirt.github.io/ofa-widgets/ceramics-featured-events.html"
+  name="ofa-events-ceramics-featured" id="ofa-events-ceramics-featured"
+  title="Featured ceramics events"
+  height="620" width="100%"
+  sandbox='allow-popups allow-scripts' allowfullscreen&gt;&lt;/iframe&gt;</code></pre>
+
+<h2>ceramics-upcoming-events.html &mdash; widget 46</h2>
+<p class="meta">
+  ofa.fas.harvard.edu/ceramics &middot; Upcoming Ceramics Events &middot;
+  <a href="ceramics-upcoming-events.html">open</a>
+</p>
+<pre><code>&lt;iframe
+  src="https://keenanshirt.github.io/ofa-widgets/ceramics-upcoming-events.html"
+  name="ofa-events-ceramics-upcoming" id="ofa-events-ceramics-upcoming"
+  title="Upcoming ceramics events"
+  height="1260" width="100%"
+  sandbox='allow-popups allow-scripts' allowfullscreen&gt;&lt;/iframe&gt;</code></pre>
+
+<h2>ceramics-visiting-artists-past-events.html &mdash; widget 47</h2>
+<p class="meta">
+  ofa.fas.harvard.edu/ceramics-visiting-artists &middot; Past Events &middot;
+  <a href="ceramics-visiting-artists-past-events.html">open</a>
+</p>
+<div class="warn">
+  This widget returns 44 events &mdash; about 7,800&nbsp;px tall at desktop
+  width. The height below reproduces the full list; drop it to something like
+  1200 if you would rather the frame scroll internally.
+</div>
+<pre><code>&lt;iframe
+  src="https://keenanshirt.github.io/ofa-widgets/ceramics-visiting-artists-past-events.html"
+  name="ofa-events-ceramics-visiting-artists-past" id="ofa-events-ceramics-visiting-artists-past"
+  title="Past ceramics visiting artists events"
+  height="7900" width="100%"
+  sandbox='allow-popups allow-scripts' allowfullscreen&gt;&lt;/iframe&gt;</code></pre>
+
+<h2>ceramics-gallery-224.html &mdash; widget 49</h2>
+<p class="meta">
+  ofa.fas.harvard.edu/ceramics/Gallery_224 &middot; Happening in Gallery 224 &middot;
+  <a href="ceramics-gallery-224.html">open</a>
+</p>
+<pre><code>&lt;iframe
+  src="https://keenanshirt.github.io/ofa-widgets/ceramics-gallery-224.html"
+  name="ofa-events-gallery-224" id="ofa-events-gallery-224"
+  title="Happening in Gallery 224"
+  height="580" width="100%"
+  sandbox='allow-popups allow-scripts' allowfullscreen&gt;&lt;/iframe&gt;</code></pre>
+
+<h2>dance-upcoming-events.html &mdash; widget 50</h2>
+<p class="meta">
+  ofa.fas.harvard.edu/dance &middot; Upcoming Events &middot;
+  <a href="dance-upcoming-events.html">open</a>
+</p>
+<div class="warn">
+  Widget 50 is configured in LiveWhale but currently returns zero events, so
+  this frame renders empty. Check the widget's filters before publishing it,
+  or the page will show a blank gap.
+</div>
+<pre><code>&lt;iframe
+  src="https://keenanshirt.github.io/ofa-widgets/dance-upcoming-events.html"
+  name="ofa-events-dance-upcoming" id="ofa-events-dance-upcoming"
+  title="Upcoming dance events"
+  height="1260" width="100%"
+  sandbox='allow-popups allow-scripts' allowfullscreen&gt;&lt;/iframe&gt;</code></pre>
+
+<h2>Measured heights</h2>
+<p class="meta">
+  Rendered content height in pixels at three frame widths. OFA's embed
+  container is 1137&nbsp;px wide at a 1280&nbsp;px viewport (3 grid columns) and
+  caps at 1312&nbsp;px (4 columns). The <code>height</code> values above come
+  from the 1137&nbsp;px column plus a small buffer.
+</p>
+<table>
+  <thead>
+    <tr><th>Widget</th><th>Events</th><th>1312 px</th><th>1137 px</th><th>375 px</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>43 home</td><td class="num">8</td><td class="num">1184</td><td class="num">1684</td><td class="num">4445</td></tr>
+    <tr><td>44 ofa-calendar</td><td class="num">16</td><td class="num">2306</td><td class="num">3306</td><td class="num">8624</td></tr>
+    <tr><td>45 ceramics featured</td><td class="num">3</td><td class="num">582</td><td class="num">582</td><td class="num">1795</td></tr>
+    <tr><td>46 ceramics upcoming</td><td class="num">5</td><td class="num">1204</td><td class="num">1204</td><td class="num">3027</td></tr>
+    <tr><td>47 past events</td><td class="num">44</td><td class="num">5777</td><td class="num">7801</td><td class="num">22761</td></tr>
+    <tr><td>49 gallery 224</td><td class="num">1</td><td class="num">542</td><td class="num">542</td><td class="num">542</td></tr>
+    <tr><td>50 dance</td><td class="num">0</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td></tr>
+  </tbody>
+</table>
+<p class="meta">
+  A fixed <code>height</code> can only be right at one width, and the event
+  count changes over time. Every page also posts its rendered height to the
+  parent window &mdash; see the listener snippet at the top of
+  <a href="widget-frame.js">widget-frame.js</a> if you ever get the chance to
+  run a few lines of JavaScript on ofa.fas.harvard.edu.
+</p>
+
+</body>
+</html>

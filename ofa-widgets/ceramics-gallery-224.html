@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gallery 224 — Happening in Gallery 224</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="description" content="LiveWhale calendar widget 49 (Happening in Gallery 224) for ofa.fas.harvard.edu/ceramics/Gallery_224. Intended to be viewed inside an iframe.">
+
+<!-- Same Google Fonts request ofa.fas.harvard.edu makes, so the widget body
+     copy renders in the host page's typeface rather than a fallback. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:ital,wght@0,400;0,700;1,400;1,700&display=swap">
+<!-- Links must open in a new tab: the host iframe is sandboxed without allow-top-navigation. -->
+<base target="_blank">
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: transparent;   /* let the host page's background show through */
+  }
+  body {
+    /* The widget CSS sets font-family:inherit on event copy, so this is what
+       the text picks up. Matches ofa.fas.harvard.edu's body font. Event titles
+       are hard-coded to Georgia by LiveWhale and match automatically. */
+    font-family: "Source Sans Pro", Arial, Helvetica, sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+    color: #202020;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+  #widget { padding: 0; }
+  /* Placeholder while the widget's XHR is in flight */
+  .lwcw.loading::before {
+    content: "Loading events\2026";
+    display: block;
+    padding: 4px 0;
+    font-size: 14px;
+    color: #6b6b6b;
+  }
+  /* Keep long event titles/URLs from forcing a horizontal scrollbar */
+  #widget a, #widget p, #widget h3 { overflow-wrap: break-word; word-wrap: break-word; }
+</style>
+</head>
+<body>
+
+<!-- ofa.fas.harvard.edu/ceramics/Gallery_224 — Happening in Gallery 224 — LiveWhale widget id 49 -->
+<div id="widget">
+  <div class="lwcw" data-options="id=49&format=html"></div>
+</div>
+
+<script type="text/javascript" id="lw_lwcw" src="https://events.college.harvard.edu/livewhale/theme/core/scripts/lwcw.js"></script>
+<script src="widget-frame.js" data-widget-id="49"></script>
+
+</body>
+</html>
