@@ -9,36 +9,30 @@
   :root { color-scheme: light dark; }
   body {
     font: 16px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
-    max-width: 62rem;
+    max-width: 64rem;
     margin: 0 auto;
     padding: 2rem 1.25rem 5rem;
   }
   h1 { font-size: 1.6rem; margin-bottom: .25rem; }
+  h2 { font-size: 1.15rem; margin: 2.5rem 0 .5rem; }
+  h3 { font-size: 1rem; margin: 2rem 0 .3rem; }
   .lede { color: #666; margin-top: 0; }
-  h2 { font-size: 1.05rem; margin: 2.25rem 0 .3rem; }
   .meta { color: #666; font-size: .875rem; margin: 0 0 .6rem; }
   .meta a { color: inherit; }
   pre {
-    background: #f4f4f5;
-    border: 1px solid #e0e0e2;
-    border-radius: 6px;
-    padding: .75rem .9rem;
-    overflow-x: auto;
-    font-size: .8125rem;
-    line-height: 1.5;
+    background: #f4f4f5; border: 1px solid #e0e0e2; border-radius: 6px;
+    padding: .75rem .9rem; overflow-x: auto; font-size: .8125rem; line-height: 1.5;
   }
   code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
   .warn {
-    background: #fff8e1;
-    border-left: 4px solid #d9a300;
-    padding: .6rem .9rem;
-    font-size: .9rem;
-    margin: .6rem 0;
+    background: #fff8e1; border-left: 4px solid #d9a300;
+    padding: .6rem .9rem; font-size: .9rem; margin: .6rem 0;
   }
-  table { border-collapse: collapse; font-size: .875rem; margin-top: .75rem; }
+  table { border-collapse: collapse; font-size: .875rem; margin-top: .75rem; width: 100%; }
   th, td { border: 1px solid #ddd; padding: .35rem .6rem; text-align: left; }
   th { background: #f4f4f5; }
-  td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  strong.pick { color: #a51c30; }
   @media (prefers-color-scheme: dark) {
     body { background: #16161a; color: #e8e8ea; }
     .lede, .meta { color: #a0a0a8; }
@@ -46,6 +40,7 @@
     th { background: #1f1f24; }
     th, td { border-color: #3a3a42; }
     .warn { background: #2a2410; border-left-color: #d9a300; }
+    strong.pick { color: #ef8ea0; }
   }
 </style>
 </head>
@@ -55,133 +50,165 @@
 <p class="lede">
   One page per LiveWhale calendar widget, each rendering a single widget with a
   transparent background so it can be iframed into
-  <a href="https://ofa.fas.harvard.edu/">ofa.fas.harvard.edu</a>.
-  Not linked from anywhere and marked <code>noindex</code> &mdash; these pages
-  exist only to be framed.
+  <a href="https://ofa.fas.harvard.edu/">ofa.fas.harvard.edu</a>, which strips
+  the widget's own script tag. Marked <code>noindex</code> and linked from
+  nowhere &mdash; these pages exist only to be framed.
 </p>
 
-<h2>home.html &mdash; widget 43</h2>
+<h2>What these pages change</h2>
 <p class="meta">
-  ofa.fas.harvard.edu/ (homepage) &middot; Upcoming Events &middot;
-  <a href="home.html">open</a>
+  Beyond hosting the widget, each frame corrects three things in LiveWhale's
+  own markup and CSS:
 </p>
+<ul class="meta">
+  <li><strong>Always 4 columns.</strong> LiveWhale ships
+    <code>repeat(auto-fill, minmax(300px, 1fr))</code> plus per-widget rules that
+    give 3 columns above 910&nbsp;px and 4 above 1310&nbsp;px, so any page with a
+    sidebar silently drops to 2&ndash;3 columns. Since a frame's viewport
+    <em>is</em> the host page's embed column, a media query inside the frame reads
+    the host layout directly and pins 4 columns on full-width and sidebar pages
+    alike.</li>
+  <li><strong>No horizontal overflow.</strong> A bare <code>1fr</code> track floors
+    at the item's min-content width, which the event photo pins at its intrinsic
+    445&nbsp;px &mdash; so on narrow containers the grid overflowed and got clipped.
+    <code>minmax(0, 1fr)</code> fixes it.</li>
+  <li><strong>Photos actually scale.</strong> LiveWhale's image rules target
+    <code>div.widget-photo-space &gt; span &gt; a &gt; img</code>, but it renders the
+    photo two levels deeper than that, so the rule never matched and images sat at
+    full size. These frames match what LiveWhale really emits and give every card a
+    uniform 4:3 photo.</li>
+</ul>
+<p class="meta">
+  <a href="widget-frame.js">widget-frame.js</a> also forces the event photos to
+  load eagerly &mdash; LiveWhale injects them after the document's load event, so
+  Chrome never runs its lazy-load check and every image slot stayed blank &mdash;
+  and posts the rendered height to the parent window for optional auto-resize.
+</p>
+
+<h2>Picking a height</h2>
+<p class="meta">
+  With 4 columns pinned, a card's height is driven by its photo, so the
+  <em>tallest</em> render is now the <em>widest</em> container. That means one
+  fixed height covers a page's whole responsive range &mdash; just size it for
+  the widest the embed column ever gets.
+</p>
+<table>
+  <thead>
+    <tr>
+      <th>Widget</th><th class="num">Events</th>
+      <th class="num">1312 px</th><th class="num">1137 px</th>
+      <th class="num">914 px</th><th class="num">657 px</th>
+      <th class="num">Full-width</th><th class="num">Sidebar</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>43 home</td><td class="num">8</td><td class="num">1057</td><td class="num">1000</td><td class="num">839</td><td class="num">777</td><td class="num"><strong class="pick">1100</strong></td><td class="num">875</td></tr>
+    <tr><td>44 ofa-calendar</td><td class="num">16</td><td class="num">1995</td><td class="num">1873</td><td class="num">1560</td><td class="num">1456</td><td class="num">2080</td><td class="num"><strong class="pick">1620</strong></td></tr>
+    <tr><td>45 ceramics featured</td><td class="num">3</td><td class="num">519</td><td class="num">510</td><td class="num">432</td><td class="num">394</td><td class="num">545</td><td class="num">455</td></tr>
+    <tr><td>46 ceramics upcoming</td><td class="num">5</td><td class="num">1041</td><td class="num">1000</td><td class="num">839</td><td class="num">777</td><td class="num">1090</td><td class="num">875</td></tr>
+    <tr><td>47 past events</td><td class="num">44</td><td class="num">4730</td><td class="num">4499</td><td class="num">3785</td><td class="num">3620</td><td class="num">4900</td><td class="num">3940</td></tr>
+    <tr><td>49 gallery 224</td><td class="num">1</td><td class="num">479</td><td class="num">446</td><td class="num">372</td><td class="num">366</td><td class="num">505</td><td class="num">390</td></tr>
+    <tr><td>50 dance</td><td class="num">0</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td></tr>
+  </tbody>
+</table>
+<p class="meta">
+  Measured content height in pixels at four embed-column widths, plus a
+  recommended <code>height</code> (widest case for that page type, ~4% buffer).
+  A full-width OFA page runs 1137&ndash;1312&nbsp;px; a page with a left nav runs
+  roughly 650&ndash;950&nbsp;px. Highlighted values are the confirmed layouts:
+  the homepage is full width, /ofa-calendar has a sidebar.
+</p>
+
+<h2>Iframe snippets</h2>
+
+<h3>home.html &mdash; widget 43 &middot; full width</h3>
+<p class="meta">ofa.fas.harvard.edu/ &middot; Upcoming Events &middot; <a href="home.html">open</a></p>
 <pre><code>&lt;iframe
   src="https://keenanshirt.github.io/ofa-widgets/home.html"
   name="ofa-events-home" id="ofa-events-home"
   title="Upcoming events at the Office for the Arts"
-  height="1750" width="100%"
+  height="1100" width="100%"
   sandbox='allow-popups allow-scripts' allowfullscreen&gt;&lt;/iframe&gt;</code></pre>
 
-<h2>ofa-calendar.html &mdash; widget 44</h2>
-<p class="meta">
-  ofa.fas.harvard.edu/ofa-calendar &middot;
-  <a href="ofa-calendar.html">open</a>
-</p>
+<h3>ofa-calendar.html &mdash; widget 44 &middot; sidebar</h3>
+<p class="meta">ofa.fas.harvard.edu/ofa-calendar &middot; <a href="ofa-calendar.html">open</a></p>
 <pre><code>&lt;iframe
   src="https://keenanshirt.github.io/ofa-widgets/ofa-calendar.html"
   name="ofa-events-calendar" id="ofa-events-calendar"
   title="Office for the Arts events calendar"
-  height="3400" width="100%"
+  height="1620" width="100%"
   sandbox='allow-popups allow-scripts' allowfullscreen&gt;&lt;/iframe&gt;</code></pre>
 
-<h2>ceramics-featured-events.html &mdash; widget 45</h2>
-<p class="meta">
-  ofa.fas.harvard.edu/ceramics &middot; Featured Events &middot;
-  <a href="ceramics-featured-events.html">open</a>
-</p>
+<h3>ceramics-featured-events.html &mdash; widget 45</h3>
+<p class="meta">ofa.fas.harvard.edu/ceramics &middot; Featured Events &middot; <a href="ceramics-featured-events.html">open</a> &middot; sidebar page? use 455</p>
 <pre><code>&lt;iframe
   src="https://keenanshirt.github.io/ofa-widgets/ceramics-featured-events.html"
   name="ofa-events-ceramics-featured" id="ofa-events-ceramics-featured"
   title="Featured ceramics events"
-  height="620" width="100%"
+  height="545" width="100%"
   sandbox='allow-popups allow-scripts' allowfullscreen&gt;&lt;/iframe&gt;</code></pre>
 
-<h2>ceramics-upcoming-events.html &mdash; widget 46</h2>
-<p class="meta">
-  ofa.fas.harvard.edu/ceramics &middot; Upcoming Ceramics Events &middot;
-  <a href="ceramics-upcoming-events.html">open</a>
-</p>
+<h3>ceramics-upcoming-events.html &mdash; widget 46</h3>
+<p class="meta">ofa.fas.harvard.edu/ceramics &middot; Upcoming Ceramics Events &middot; <a href="ceramics-upcoming-events.html">open</a> &middot; sidebar page? use 875</p>
 <pre><code>&lt;iframe
   src="https://keenanshirt.github.io/ofa-widgets/ceramics-upcoming-events.html"
   name="ofa-events-ceramics-upcoming" id="ofa-events-ceramics-upcoming"
   title="Upcoming ceramics events"
-  height="1260" width="100%"
+  height="1090" width="100%"
   sandbox='allow-popups allow-scripts' allowfullscreen&gt;&lt;/iframe&gt;</code></pre>
 
-<h2>ceramics-visiting-artists-past-events.html &mdash; widget 47</h2>
-<p class="meta">
-  ofa.fas.harvard.edu/ceramics-visiting-artists &middot; Past Events &middot;
-  <a href="ceramics-visiting-artists-past-events.html">open</a>
-</p>
+<h3>ceramics-visiting-artists-past-events.html &mdash; widget 47</h3>
+<p class="meta">ofa.fas.harvard.edu/ceramics-visiting-artists &middot; Past Events &middot; <a href="ceramics-visiting-artists-past-events.html">open</a> &middot; sidebar page? use 3940</p>
 <div class="warn">
-  This widget returns 44 events &mdash; about 7,800&nbsp;px tall at desktop
-  width. The height below reproduces the full list; drop it to something like
-  1200 if you would rather the frame scroll internally.
+  44 events, so this is still ~4,900&nbsp;px tall even at 4 columns &mdash; down
+  from ~7,800&nbsp;px before. Drop the height to ~1200 if you would rather the
+  frame scroll internally, or trim the widget in LiveWhale
+  (<code>max_results</code> is not honored by this endpoint).
 </div>
 <pre><code>&lt;iframe
   src="https://keenanshirt.github.io/ofa-widgets/ceramics-visiting-artists-past-events.html"
   name="ofa-events-ceramics-visiting-artists-past" id="ofa-events-ceramics-visiting-artists-past"
   title="Past ceramics visiting artists events"
-  height="7900" width="100%"
+  height="4900" width="100%"
   sandbox='allow-popups allow-scripts' allowfullscreen&gt;&lt;/iframe&gt;</code></pre>
 
-<h2>ceramics-gallery-224.html &mdash; widget 49</h2>
-<p class="meta">
-  ofa.fas.harvard.edu/ceramics/Gallery_224 &middot; Happening in Gallery 224 &middot;
-  <a href="ceramics-gallery-224.html">open</a>
-</p>
+<h3>ceramics-gallery-224.html &mdash; widget 49</h3>
+<p class="meta">ofa.fas.harvard.edu/ceramics/Gallery_224 &middot; Happening in Gallery 224 &middot; <a href="ceramics-gallery-224.html">open</a> &middot; sidebar page? use 390</p>
 <pre><code>&lt;iframe
   src="https://keenanshirt.github.io/ofa-widgets/ceramics-gallery-224.html"
   name="ofa-events-gallery-224" id="ofa-events-gallery-224"
   title="Happening in Gallery 224"
-  height="580" width="100%"
+  height="505" width="100%"
   sandbox='allow-popups allow-scripts' allowfullscreen&gt;&lt;/iframe&gt;</code></pre>
 
-<h2>dance-upcoming-events.html &mdash; widget 50</h2>
-<p class="meta">
-  ofa.fas.harvard.edu/dance &middot; Upcoming Events &middot;
-  <a href="dance-upcoming-events.html">open</a>
-</p>
+<h3>dance-upcoming-events.html &mdash; widget 50</h3>
+<p class="meta">ofa.fas.harvard.edu/dance &middot; Upcoming Events &middot; <a href="dance-upcoming-events.html">open</a></p>
 <div class="warn">
   Widget 50 is configured in LiveWhale but currently returns zero events, so
-  this frame renders empty. Check the widget's filters before publishing it,
-  or the page will show a blank gap.
+  this frame renders empty and there is nothing to measure. Check the widget's
+  filters before publishing it, or the page will show a blank gap.
 </div>
 <pre><code>&lt;iframe
   src="https://keenanshirt.github.io/ofa-widgets/dance-upcoming-events.html"
   name="ofa-events-dance-upcoming" id="ofa-events-dance-upcoming"
   title="Upcoming dance events"
-  height="1260" width="100%"
+  height="1090" width="100%"
   sandbox='allow-popups allow-scripts' allowfullscreen&gt;&lt;/iframe&gt;</code></pre>
 
-<h2>Measured heights</h2>
-<p class="meta">
-  Rendered content height in pixels at three frame widths. OFA's embed
-  container is 1137&nbsp;px wide at a 1280&nbsp;px viewport (3 grid columns) and
-  caps at 1312&nbsp;px (4 columns). The <code>height</code> values above come
-  from the 1137&nbsp;px column plus a small buffer.
-</p>
-<table>
-  <thead>
-    <tr><th>Widget</th><th>Events</th><th>1312 px</th><th>1137 px</th><th>375 px</th></tr>
-  </thead>
-  <tbody>
-    <tr><td>43 home</td><td class="num">8</td><td class="num">1184</td><td class="num">1684</td><td class="num">4445</td></tr>
-    <tr><td>44 ofa-calendar</td><td class="num">16</td><td class="num">2306</td><td class="num">3306</td><td class="num">8624</td></tr>
-    <tr><td>45 ceramics featured</td><td class="num">3</td><td class="num">582</td><td class="num">582</td><td class="num">1795</td></tr>
-    <tr><td>46 ceramics upcoming</td><td class="num">5</td><td class="num">1204</td><td class="num">1204</td><td class="num">3027</td></tr>
-    <tr><td>47 past events</td><td class="num">44</td><td class="num">5777</td><td class="num">7801</td><td class="num">22761</td></tr>
-    <tr><td>49 gallery 224</td><td class="num">1</td><td class="num">542</td><td class="num">542</td><td class="num">542</td></tr>
-    <tr><td>50 dance</td><td class="num">0</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td></tr>
-  </tbody>
-</table>
-<p class="meta">
-  A fixed <code>height</code> can only be right at one width, and the event
-  count changes over time. Every page also posts its rendered height to the
-  parent window &mdash; see the listener snippet at the top of
-  <a href="widget-frame.js">widget-frame.js</a> if you ever get the chance to
-  run a few lines of JavaScript on ofa.fas.harvard.edu.
-</p>
+<h2>Notes</h2>
+<ul class="meta">
+  <li>Below 640&nbsp;px the grid steps to 2 columns, and below 420&nbsp;px to 1,
+    so phones stay legible. Those layouts are taller than the fixed height, so
+    the frame scrolls internally on small screens.</li>
+  <li>Drupal replaced the <code>title</code> attribute with "Widget" on
+    /ofa-calendar. If the embed component has its own title field, set it to
+    something descriptive &mdash; screen readers announce it.</li>
+  <li>Links open in a new tab (<code>base target="_blank"</code>), since the
+    sandbox has no top-navigation permission. Adding
+    <code>allow-popups-to-escape-sandbox</code> is worth considering, so the
+    opened events.college.harvard.edu page is a normal tab rather than
+    inheriting the sandbox.</li>
+</ul>
 
 </body>
 </html>
