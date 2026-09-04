@@ -109,6 +109,7 @@
     <tr><td>47 past events</td><td class="num">44</td><td class="num">4730</td><td class="num">4499</td><td class="num">3785</td><td class="num">3620</td><td class="num">4900</td><td class="num">3940</td></tr>
     <tr><td>49 gallery 224</td><td class="num">1</td><td class="num">479</td><td class="num">446</td><td class="num">372</td><td class="num">366</td><td class="num">505</td><td class="num">390</td></tr>
     <tr><td>50 dance</td><td class="num">0</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td></tr>
+    <tr><td>dance newsletter (form)</td><td class="num">&mdash;</td><td class="num">472</td><td class="num">472</td><td class="num">472</td><td class="num">495</td><td class="num">700</td><td class="num">700</td></tr>
   </tbody>
 </table>
 <p class="meta">
@@ -194,6 +195,37 @@
   title="Upcoming dance events"
   height="1090" width="100%"
   sandbox='allow-popups allow-scripts' allowfullscreen&gt;&lt;/iframe&gt;</code></pre>
+
+<h3>dance-newsletter.html &mdash; Mailchimp signup</h3>
+<p class="meta">ofa.fas.harvard.edu/dance &middot; Dance Mailing List &middot; <a href="dance-newsletter.html">open</a></p>
+<div class="warn">
+  <strong>This one needs <code>allow-forms</code> in the sandbox.</strong> A
+  sandboxed iframe blocks form submission unless that token is present, so with
+  the usual <code>allow-popups allow-scripts</code> the Subscribe button would
+  do nothing. <code>allow-popups</code> is also required, because the form
+  posts with <code>target="_blank"</code>.
+</div>
+<pre><code>&lt;iframe
+  src="https://keenanshirt.github.io/ofa-widgets/dance-newsletter.html"
+  name="ofa-dance-newsletter" id="ofa-dance-newsletter"
+  title="Subscribe to the Dance mailing list"
+  height="700" width="100%"
+  sandbox='allow-forms allow-popups allow-popups-to-escape-sandbox allow-scripts' allowfullscreen&gt;&lt;/iframe&gt;</code></pre>
+<p class="meta">
+  The form itself is 472&nbsp;px tall at rest (495&nbsp;px on a phone). It grows
+  when Mailchimp shows validation errors &mdash; 662&nbsp;px with both required-field
+  errors plus a response banner, 685&nbsp;px on a phone &mdash; so 700 is sized so
+  nothing is ever clipped. Use 520 instead if you would rather not have the
+  slack, at the cost of a short internal scroll when someone submits an
+  incomplete form. The form is capped at 38&nbsp;rem (608&nbsp;px) wide by its own
+  CSS, so it does not stretch on a full-width page.
+</p>
+<p class="meta">
+  Fonts come from OFA's own Adobe Fonts kit (<code>use.typekit.net/oes1zsc.css</code>),
+  so the frame renders in real <code>museo-sans</code> rather than a fallback.
+  That kit serves cross-origin today; if its domain allowlist is ever tightened,
+  add keenanshirt.github.io to it or the stack falls back to Helvetica Neue / Arial.
+</p>
 
 <h2>Notes</h2>
 <ul class="meta">
