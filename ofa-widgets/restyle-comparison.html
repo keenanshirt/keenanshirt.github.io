@@ -60,7 +60,15 @@
   .label .src code { font-size: 12.5px; }
 
   .frame { width: 100%; border: 1px solid var(--rule); background: #fff; }
-  iframe { display: block; width: 100%; border: 0; }
+  /* --- Why the panels are capped ----------------------------------------
+     Each of these feeds is ~34 events, which renders about 5,000px tall.
+     Two of those stacked makes an 11,000px document, and Chrome then paints
+     NOTHING in an iframe that far outside the viewport -- measured on this
+     page before the cap went in. So each panel is a fixed 820px window that
+     scrolls internally. Both are capped identically, so the comparison is
+     unaffected; you are seeing the top of each feed, not all of it.
+     --------------------------------------------------------------------- */
+  iframe { display: block; width: 100%; height: 820px; border: 0; }
 
   footer { margin-top: 46px; padding-top: 16px; border-top: 1px solid var(--rule);
            font-size: 13.5px; color: var(--mute); }
@@ -90,6 +98,8 @@
        blank forever. Without that fix in <em>both</em> panels, the stock half would
        look broken for a reason that has nothing to do with styling.</p>
     <p><b>So everything you see differ below is CSS.</b></p>
+    <p>Each panel is a fixed 820px window that scrolls internally — these feeds
+       run to about 34 events each. Both are capped the same way.</p>
   </div>
 
   <section>
@@ -99,7 +109,7 @@
       <span class="src"><code>ofa-widgets/livewhale-stock.html</code></span>
     </div>
     <div class="frame">
-      <iframe src="livewhale-stock.html" data-widget-id="stock" height="900"
+      <iframe src="livewhale-stock.html" data-widget-id="stock" height="820"
               title="LiveWhale widget 44, unstyled" loading="eager"></iframe>
     </div>
   </section>
@@ -111,7 +121,7 @@
       <span class="src"><code>ofa-widgets/ofa-calendar.html</code></span>
     </div>
     <div class="frame">
-      <iframe src="ofa-calendar.html" data-widget-id="44" height="900"
+      <iframe src="ofa-calendar.html" data-widget-id="44" height="820"
               title="LiveWhale widget 44, restyled for OFA" loading="eager"></iframe>
     </div>
   </section>
@@ -145,18 +155,12 @@
 
 </div>
 
-<script>
-/* Host-side height listener, exactly as documented in ofa-widgets/widget-frame.js.
-   Each frame reports its own rendered height; we size the iframe to match so
-   neither panel gets an inner scrollbar that would distort the comparison. */
-window.addEventListener('message', function (e) {
-  if (e.origin !== 'https://keenanshirt.github.io') return;
-  var d = e.data;
-  if (!d || d.type !== 'ofa-widget-height') return;
-  var f = document.querySelector('iframe[data-widget-id="' + d.id + '"]');
-  if (f && d.height > 0) f.style.height = d.height + 'px';
-});
-</script>
+<!-- No host-side height listener here on purpose.
+     ofa-widgets/widget-frame.js does report each frame's height, and sizing the
+     iframes to match is the right behaviour on a real OFA page (one widget per
+     page, a few hundred px). On THIS page it grew an 11,288px document holding
+     two 5,000px iframes, and Chrome stopped painting the lower one entirely.
+     Capped panels with internal scrolling are the correct trade here. -->
 
 </body>
 </html>
