@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LiveWhale widget 44 — stock, no OFA styling</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="description" content="LiveWhale calendar widget 44 embedded with NO OFA overrides, as the control half of ofa-widgets/restyle-comparison.html.">
+<base target="_blank">
+<style>
+  /* Deliberately almost empty. This page is the CONTROL: it must show what
+     LiveWhale ships when nobody overrides it.
+
+     The two rules below are NOT styling, and they are here so the comparison
+     is honest rather than flattering:
+
+     1. The transparent background and zeroed margin match the restyled frame,
+        so the difference on screen is the widget, not the page around it.
+     2. Nothing else. No font, no grid, no image sizing. */
+  html, body { margin: 0; padding: 0; background: transparent; }
+</style>
+</head>
+<body>
+
+<!-- ofa.fas.harvard.edu/ofa-calendar — Calendar — LiveWhale widget id 44 -->
+<div id="widget">
+  <div class="lwcw" data-options="id=44&format=html"></div>
+</div>
+
+<script type="text/javascript" id="lw_lwcw" src="https://events.college.harvard.edu/livewhale/theme/core/scripts/lwcw.js"></script>
+
+<script>
+/* The same two NON-COSMETIC fixes the restyled frame gets, for the same reason
+   the CSS above is minimal: without them this control would look broken for a
+   reason that has nothing to do with styling, and the comparison would be
+   dishonest.
+
+   - unlazy(): LiveWhale marks its event photos loading="lazy" but injects them
+     after this document has fired 'load'. Chrome never runs its lazy-load check
+     on images added to an already-complete document it is not scrolling, so the
+     photo slots stay permanently blank. See ofa-widgets/widget-frame.js.
+   - height reporting: lets the parent size this iframe instead of scrolling. */
+(function () {
+  'use strict';
+  var last = 0;
+  function measure() {
+    var el = document.getElementById('widget');
+    return el ? Math.ceil(el.getBoundingClientRect().bottom + window.pageYOffset)
+              : Math.ceil(document.body ? document.body.scrollHeight : 0);
+  }
+  function refresh() {
+    var imgs = document.querySelectorAll('#widget img[loading="lazy"]');
+    for (var i = 0; i < imgs.length; i++) imgs[i].setAttribute('loading', 'eager');
+    var h = measure();
+    if (!h || h === last) return;
+    last = h;
+    try {
+      window.parent.postMessage({ type: 'ofa-widget-height', id: 'stock', height: h }, '*');
+    } catch (e) { /* framed by nobody */ }
+  }
+  if (window.MutationObserver) {
+    new MutationObserver(refresh).observe(document.getElementById('widget') || document.body,
+      { childList: true, subtree: true });
+  }
+  window.addEventListener('load', refresh);
+  window.addEventListener('resize', refresh);
+  document.addEventListener('DOMContentLoaded', refresh);
+  [250, 750, 1500, 3000, 6000].forEach(function (ms) { window.setTimeout(refresh, ms); });
+})();
+</script>
+
+</body>
+</html>
