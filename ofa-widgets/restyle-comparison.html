@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OFA calendar widget — stock vs restyled</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="description" content="Side-by-side of LiveWhale calendar widget 44 as shipped and as restyled for ofa.fas.harvard.edu. A test page, not a production embed.">
+<style>
+  /* Palette measured from ofa.fas.harvard.edu and recorded in the tooling
+     repo at embeds/README.md. The theme does not publish a stylesheet with
+     these in it -- it injects --hwp-* custom properties inline on every page. */
+  :root {
+    --ink:   #1E1E1E;
+    --crim:  #A51C30;
+    --cta:   #007A8A;
+    --cream: #FBF7EF;
+    --rule:  #DED8CC;
+    --mute:  #5A5A5A;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: #fff;
+    color: var(--ink);
+    font: 16px/1.55 "Source Sans Pro", Arial, Helvetica, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1400px; margin: 0 auto; padding: 28px 20px 64px; }
+
+  header { border-bottom: 3px solid var(--crim); padding-bottom: 18px; margin-bottom: 8px; }
+  h1 { font-size: 25px; line-height: 1.25; margin: 0 0 8px; font-weight: 700; }
+  .sub { color: var(--mute); font-size: 15px; margin: 0; max-width: 74ch; }
+
+  .note {
+    background: var(--cream);
+    border-left: 4px solid var(--cta);
+    padding: 14px 18px;
+    margin: 22px 0 8px;
+    font-size: 14.5px;
+    max-width: 96ch;
+  }
+  .note p { margin: 0 0 9px; }
+  .note p:last-child { margin: 0; }
+  .note b { color: var(--ink); }
+
+  section { margin-top: 34px; }
+  .label {
+    display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap;
+    border-bottom: 1px solid var(--rule); padding-bottom: 9px; margin-bottom: 16px;
+  }
+  .label h2 { font-size: 18px; margin: 0; font-weight: 700; }
+  .tag {
+    font-size: 11.5px; letter-spacing: .07em; text-transform: uppercase;
+    font-weight: 700; padding: 3px 9px; border-radius: 2px; white-space: nowrap;
+  }
+  .tag.stock    { background: #EEE; color: #444; }
+  .tag.restyled { background: var(--cta); color: #fff; }
+  .label .src { font-size: 13px; color: var(--mute); margin-left: auto; }
+  .label .src code { font-size: 12.5px; }
+
+  .frame { width: 100%; border: 1px solid var(--rule); background: #fff; }
+  iframe { display: block; width: 100%; border: 0; }
+
+  footer { margin-top: 46px; padding-top: 16px; border-top: 1px solid var(--rule);
+           font-size: 13.5px; color: var(--mute); }
+  footer code { font-size: 12.5px; }
+  @media (max-width: 640px) { h1 { font-size: 21px; } .wrap { padding: 20px 14px 48px; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>OFA calendar widget — as LiveWhale ships it, and as restyled</h1>
+    <p class="sub">Both panels below embed the <b>same</b> LiveWhale widget
+      (id&nbsp;44, the OFA Calendar feed from <code>events.college.harvard.edu</code>),
+      pulling the same live events. The only difference is the CSS applied around it.</p>
+  </header>
+
+  <div class="note">
+    <p><b>What is held constant, so this is a fair comparison and not a flattering one.</b>
+       Both frames get a transparent background, a zeroed body margin, and two
+       non-cosmetic fixes: eager-loading the event photos, and reporting their
+       height to this page so neither panel scrolls inside a fixed box.</p>
+    <p>The photo fix matters. LiveWhale marks its event images
+       <code>loading="lazy"</code> but injects them after the document has already
+       fired <code>load</code>, and Chrome never runs its lazy-load check on images
+       added to a complete document it is not scrolling — so the photo slots stay
+       blank forever. Without that fix in <em>both</em> panels, the stock half would
+       look broken for a reason that has nothing to do with styling.</p>
+    <p><b>So everything you see differ below is CSS.</b></p>
+  </div>
+
+  <section>
+    <div class="label">
+      <span class="tag stock">Stock</span>
+      <h2>No OFA styling at all</h2>
+      <span class="src"><code>ofa-widgets/livewhale-stock.html</code></span>
+    </div>
+    <div class="frame">
+      <iframe src="livewhale-stock.html" data-widget-id="stock" height="900"
+              title="LiveWhale widget 44, unstyled" loading="eager"></iframe>
+    </div>
+  </section>
+
+  <section>
+    <div class="label">
+      <span class="tag restyled">Restyled</span>
+      <h2>The production frame currently used for the OFA Calendar page</h2>
+      <span class="src"><code>ofa-widgets/ofa-calendar.html</code></span>
+    </div>
+    <div class="frame">
+      <iframe src="ofa-calendar.html" data-widget-id="44" height="900"
+              title="LiveWhale widget 44, restyled for OFA" loading="eager"></iframe>
+    </div>
+  </section>
+
+  <div class="note" style="margin-top:34px">
+    <p><b>What the restyle actually does</b> — it is all override CSS, no change to
+       the feed or its configuration:</p>
+    <p>• Forces a <b>4-column grid</b>. LiveWhale ships
+       <code>repeat(auto-fill, minmax(300px, 1fr))</code>, which collapses to 3 or 2
+       columns inside any page with a sidebar.<br>
+       • <b>Repairs the event photos.</b> LiveWhale's own image CSS targets
+       <code>div.widget-photo-space &gt; span &gt; a &gt; img</code>, but it renders the
+       photo two levels deeper than that, so its rule never matches and the image
+       never scales — it is placed into a 4:3 box with <code>object-fit: cover</code>
+       instead.<br>
+       • Matches the <b>site's body typeface</b> and text colour.<br>
+       • Steps the grid down at 1000px, 640px and 420px so it stays legible on a phone.</p>
+    <p><b>Open question, flagged rather than guessed:</b> the production frame requests
+       <em>Source Sans Pro</em> as the site's body font, while the palette recorded in
+       the tooling repo names <em>museo-sans</em>. One of the two is stale. Worth
+       settling by reading the live page's own inline <code>--hwp-*</code> properties.</p>
+  </div>
+
+  <footer>
+    <p>Test page — <code>noindex</code>, not linked from the OFA site, and not a
+       production embed. The widget definition (id&nbsp;44) lives on
+       <code>events.college.harvard.edu</code>, which is the Harvard College events
+       team's LiveWhale install, not an OFA-owned service; this page changes only the
+       CSS around it.</p>
+  </footer>
+
+</div>
+
+<script>
+/* Host-side height listener, exactly as documented in ofa-widgets/widget-frame.js.
+   Each frame reports its own rendered height; we size the iframe to match so
+   neither panel gets an inner scrollbar that would distort the comparison. */
+window.addEventListener('message', function (e) {
+  if (e.origin !== 'https://keenanshirt.github.io') return;
+  var d = e.data;
+  if (!d || d.type !== 'ofa-widget-height') return;
+  var f = document.querySelector('iframe[data-widget-id="' + d.id + '"]');
+  if (f && d.height > 0) f.style.height = d.height + 'px';
+});
+</script>
+
+</body>
+</html>
